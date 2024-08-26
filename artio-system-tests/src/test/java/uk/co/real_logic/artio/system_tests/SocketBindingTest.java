@@ -72,12 +72,13 @@ public class SocketBindingTest extends AbstractMessageBasedAcceptorSystemTest
     public void shouldNotDisconnectWhenUnbinding() throws IOException
     {
         setup(true, true);
+        testSystem = new TestSystem();
 
-        try (FixConnection connection = FixConnection.initiate(port))
+        try (FixConnection connection = FixConnection.initiate(port, false))
         {
             logon(connection);
             completeUnbind();
-            connection.logoutAndAwaitReply();
+            logoutAndAwaitReply(connection);
         }
     }
 
@@ -85,6 +86,7 @@ public class SocketBindingTest extends AbstractMessageBasedAcceptorSystemTest
     public void shouldDisconnectWhenRequestedWithUnbinding() throws IOException
     {
         setup(true, true);
+        testSystem = new TestSystem();
 
         try (FixConnection connection = FixConnection.initiate(port))
         {

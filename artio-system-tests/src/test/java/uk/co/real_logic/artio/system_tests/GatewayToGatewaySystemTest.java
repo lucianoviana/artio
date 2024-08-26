@@ -114,6 +114,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         assertSequenceIndicesAre(0);
 
+        testSystem.await(() -> messageTimingHandler.count() == 2);
         messageTimingHandler.verifyConsecutiveSequenceNumbers(2);
     }
 
@@ -351,7 +352,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
             return count >= 1;
         });
 
-        assertEquals(2, fakeResendRequestController.callCount());
+        testSystem.await(() -> fakeResendRequestController.callCount() == 2);
     }
 
     // Test exists to replicate a faily complex bug involving a sequence number issue after a library timeout.
@@ -1243,12 +1244,12 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
             Thread.yield();
         }
 
-        assertEquals(PASSWORD, auth.logonPassword());
-        assertEquals(PASSWORD, auth.userRequestPassword());
-        assertEquals(NEW_PASSWORD, auth.userRequestNewPassword());
-        assertEquals(1, auth.sessionId());
+        testSystem.await(() -> PASSWORD.equals(auth.logonPassword()));
+        testSystem.await(() -> PASSWORD.equals(auth.userRequestPassword()));
+        testSystem.await(() -> NEW_PASSWORD.equals(auth.userRequestNewPassword()));
+        testSystem.await(() -> 1 == auth.sessionId());
 
-        assertArchiveDoesNotContainPassword();
+        testSystem.await("unexpected result", this::assertArchiveDoesNotContainPassword);
     }
 
     @Test(timeout = TEST_TIMEOUT_IN_MS)
@@ -1302,7 +1303,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         }
     }
 
-    private void assertArchiveDoesNotContainPassword()
+    private boolean assertArchiveDoesNotContainPassword()
     {
         final EngineConfiguration configuration = acceptingEngine.configuration();
 
@@ -1311,10 +1312,12 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertThat(messages, hasSize(greaterThanOrEqualTo(1)));
         for (final String message : messages)
         {
-            assertThat(message + " contains the password",
-                message,
-                allOf(not(containsString(PASSWORD)), not(containsString(NEW_PASSWORD))));
+            if (!allOf(not(containsString(PASSWORD)), not(containsString(NEW_PASSWORD))).matches(message))
+            {
+                return false;
+            }
         }
+        return true;
     }
 
     private void exchangeExecutionReport()

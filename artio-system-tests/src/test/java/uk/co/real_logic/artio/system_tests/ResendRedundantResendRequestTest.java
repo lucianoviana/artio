@@ -44,7 +44,7 @@ public class ResendRedundantResendRequestTest
     {
         setup(false);
 
-        try (FixConnection connection = FixConnection.initiate(port))
+        try (FixConnection connection = FixConnection.initiate(port, true))
         {
             connection.msgSeqNum(3);
             connection.logon(false);

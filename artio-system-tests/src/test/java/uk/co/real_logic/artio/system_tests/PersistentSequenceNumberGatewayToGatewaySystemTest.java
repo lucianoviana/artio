@@ -492,7 +492,8 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
 
             connectPersistingSessions();
 
-            assertFalse(acceptingSession.isReplaying());
+            testSystem.await(() -> !acceptingSession.isReplaying());
+            testSystem.await(() -> !initiatingSession.isReplaying());
             sendResendRequest(1, 0, initiatingOtfAcceptor, initiatingSession);
             testSystem.await("failed to start replaying", acceptingSession::isReplaying);
 

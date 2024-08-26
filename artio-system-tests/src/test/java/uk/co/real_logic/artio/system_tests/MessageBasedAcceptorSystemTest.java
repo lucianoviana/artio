@@ -68,6 +68,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     public void shouldComplyWithLogonBasedSequenceNumberResetOn()
         throws IOException
     {
+        testSystem = new TestSystem();
         shouldComplyWithLogonBasedSequenceNumberReset(true);
     }
 
@@ -75,6 +76,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     public void shouldComplyWithLogonBasedSequenceNumberResetOff()
         throws IOException
     {
+        testSystem = new TestSystem();
         shouldComplyWithLogonBasedSequenceNumberReset(false);
     }
 
@@ -92,6 +94,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     public void shouldNotNotifyLibraryOfSessionUntilLoggedOn() throws IOException
     {
         setup(true, true);
+        testSystem = new TestSystem();
 
         final FakeOtfAcceptor fakeOtfAcceptor = new FakeOtfAcceptor();
         final FakeHandler fakeHandler = new FakeHandler(fakeOtfAcceptor);
@@ -114,12 +117,13 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     public void shouldRejectExceptionalLogonMessageAndLogout() throws IOException
     {
         setup(true, true);
+        testSystem = new TestSystem();
 
         try (FixConnection connection = FixConnection.initiate(port))
         {
             sendInvalidLogon(connection);
 
-            final RejectDecoder reject = connection.readMessage(new RejectDecoder());
+            final RejectDecoder reject = testSystem.await(() -> connection.readMessage(new RejectDecoder()));
             assertEquals(1, reject.refSeqNum());
             assertEquals(Constants.SENDING_TIME, reject.refTagID());
             assertEquals(LogonDecoder.MESSAGE_TYPE_AS_STRING, reject.refMsgTypeAsString());
@@ -132,6 +136,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     public void shouldRejectExceptionalSessionMessage() throws IOException
     {
         setup(true, true);
+        testSystem = new TestSystem();
 
         try (FixConnection connection = FixConnection.initiate(port))
         {
@@ -139,11 +144,11 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
             sendInvalidTestRequestMessage(connection);
 
-            final RejectDecoder reject = connection.readReject();
+            final RejectDecoder reject = testSystem.await(connection::readReject);
             assertEquals(2, reject.refSeqNum());
             assertEquals(Constants.SENDING_TIME, reject.refTagID());
 
-            connection.logoutAndAwaitReply();
+            logoutAndAwaitReply(connection);
         }
     }
 
@@ -181,7 +186,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         {
             connection.logon(true, 1);
 
-            final LogonDecoder logon = connection.readLogon();
+            final LogonDecoder logon = testSystem.await(connection::readLogon);
             assertTrue(logon.resetSeqNumFlag());
 
             final Session session = acquireSession();
@@ -209,7 +214,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
             session = acquireSession();
 
-            connection.readLogon();
+            testSystem.await(connection::readLogon);
 
             connection.logout();
         }
@@ -232,13 +237,16 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 return !handler.sessions().contains(session);
             });
 
-            connection.readLogon();
+            testSystem.await(connection::readLogon);
             // check that it really is a logon and not the logout
             assertThat(
                 connection.lastTotalBytesRead(),
                 containsString("\00135=A\001"));
 
-            connection.logoutAndAwaitReply();
+            connection.logout();
+
+            final LogoutDecoder logout = testSystem.await(connection::readLogout);
+            assertFalse(logout.textAsString(), logout.hasText());
         }
     }
 
@@ -267,7 +275,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 return session.lastSentMsgSeqNum() >= 2;
             });
 
-            final RejectDecoder rejectDecoder = connection.readReject();
+            final RejectDecoder rejectDecoder = testSystem.await(connection::readReject);
             assertEquals(2, rejectDecoder.refSeqNum());
             assertEquals(TEST_REQUEST_MESSAGE_TYPE_STR, rejectDecoder.refMsgTypeAsString());
             assertEquals(COMPID_PROBLEM, rejectDecoder.sessionRejectReasonAsEnum());
@@ -281,13 +289,14 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     public void shouldRejectInvalidResendRequestsWrongCompId() throws IOException
     {
         setup(true, true);
+        testSystem = new TestSystem();
 
         try (FixConnection connection = FixConnection.initiate(port))
         {
             logon(connection);
 
             final String testReqId = "ABC";
-            final int headerSeqNum = connection.exchangeTestRequestHeartbeat(testReqId).header().msgSeqNum();
+            final int headerSeqNum = exchangeTestRequestHeartbeat(connection, testReqId).header().msgSeqNum();
 
             // Send an invalid resend request
             final ResendRequestEncoder resendRequest = new ResendRequestEncoder();
@@ -296,13 +305,13 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             resendRequest.header().targetCompID(" ");
             connection.send(resendRequest);
 
-            connection.readReject();
-            connection.readLogout();
+            testSystem.await(connection::readReject);
+            testSystem.await(connection::readLogout);
 
             sleep(200);
 
             connection.logout();
-            assertFalse("Read a resent FIX message instead of a disconnect", connection.isConnected());
+            testSystem.await(() -> !connection.isConnected());
         }
     }
 
@@ -319,10 +328,9 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     @Test(timeout = TEST_TIMEOUT_IN_MS)
     public void shouldRejectInvalidResendRequestsEndSeqNoBelowBeginSeqNo() throws IOException
     {
+        testSystem = new TestSystem();
         shouldRejectInvalidResendRequests((connection, reportSeqNum) ->
-        {
-            return connection.sendResendRequest(reportSeqNum, reportSeqNum - 1);
-        });
+            connection.sendResendRequest(reportSeqNum, reportSeqNum - 1));
     }
 
     private void shouldRejectInvalidResendRequests(
@@ -337,26 +345,24 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             logon(connection);
 
             final String testReqId = "ABC";
-            connection.exchangeTestRequestHeartbeat(testReqId).header().msgSeqNum();
+            connection.sendTestRequest(testReqId);
+            testSystem.await(() -> connection.readHeartbeat(testReqId)).header().msgSeqNum();
 
             session = acquireSession();
             ReportFactory.sendOneReport(testSystem, session, Side.SELL);
 
-            testSystem.awaitBlocking(() ->
-            {
-                final int reportSeqNum = connection.readExecutionReport().header().msgSeqNum();
+            final int reportSeqNum = testSystem.await(connection::readExecutionReport).header().msgSeqNum();
 
-                // Send an invalid resend request
-                final ResendRequestEncoder resendRequest = resendRequester.apply(connection, reportSeqNum);
+            // Send an invalid resend request
+            final ResendRequestEncoder resendRequest = resendRequester.apply(connection, reportSeqNum);
 
-                final RejectDecoder reject = connection.readReject();
-                assertEquals(RESEND_REQUEST_MESSAGE_AS_STR, reject.refMsgTypeAsString());
-                assertEquals(resendRequest.header().msgSeqNum(), reject.refSeqNum());
+            final RejectDecoder reject = testSystem.await(connection::readReject);
+            assertEquals(RESEND_REQUEST_MESSAGE_AS_STR, reject.refMsgTypeAsString());
+            assertEquals(resendRequest.header().msgSeqNum(), reject.refSeqNum());
 
-                connection.logout();
-                connection.readLogout();
-                assertFalse("Read a resent FIX message instead of a disconnect", connection.isConnected());
-            });
+            connection.logout();
+            testSystem.await(connection::readLogout);
+            testSystem.await(() -> !connection.isConnected());
         }
     }
 
@@ -371,7 +377,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             logon(connection);
 
             final String testReqId = "ABC";
-            final int headerSeqNum = connection.exchangeTestRequestHeartbeat(testReqId).header().msgSeqNum();
+            final int headerSeqNum = exchangeTestRequestHeartbeat(connection, testReqId).header().msgSeqNum();
 
             session = acquireSession();
             final long reportIndex = ReportFactory.sendOneReport(testSystem, session, Side.SELL);
@@ -380,31 +386,30 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 engine.libraryIndexedPosition(library.libraryId())).resultIfPresent();
             testSystem.awaitPosition(libraryPosition, reportIndex);
 
-            testSystem.awaitBlocking(() ->
-            {
-                final int reportSeqNum = connection.readExecutionReport().header().msgSeqNum();
+            final int reportSeqNum = connection.readExecutionReport().header().msgSeqNum();
 
-                // Send an invalid resend request
-                final int invalidSeqNum = reportSeqNum + 100;
-                connection.sendResendRequest(headerSeqNum, invalidSeqNum);
+            // Send an invalid resend request
+            final int invalidSeqNum = reportSeqNum + 100;
+            connection.sendResendRequest(headerSeqNum, invalidSeqNum);
 
-                final SequenceResetDecoder sequenceResetDecoder = connection.readMessage(new SequenceResetDecoder());
-                assertTrue(sequenceResetDecoder.header().possDupFlag());
-                assertEquals(connection.lastMessageAsString(), reportSeqNum, sequenceResetDecoder.newSeqNo());
-                final ExecutionReportDecoder secondExecutionReport = connection.readExecutionReport();
-                assertTrue(secondExecutionReport.header().possDupFlag());
-                assertEquals(reportSeqNum, secondExecutionReport.header().msgSeqNum());
+            final SequenceResetDecoder sequenceResetDecoder = testSystem.await(
+                () -> connection.readMessage(new SequenceResetDecoder()));
+            assertTrue(sequenceResetDecoder.header().possDupFlag());
+            assertEquals(connection.lastMessageAsString(), reportSeqNum, sequenceResetDecoder.newSeqNo());
 
-                sleep(200);
+            final ExecutionReportDecoder secondExecutionReport = testSystem.await(connection::readExecutionReport);
+            assertTrue(secondExecutionReport.header().possDupFlag());
+            assertEquals(reportSeqNum, secondExecutionReport.header().msgSeqNum());
 
-                final HeartbeatDecoder heartbeat = connection.exchangeTestRequestHeartbeat("ABC2");
-                assertFalse(heartbeat.header().hasPossDupFlag());
-                assertEquals(reportSeqNum + 1, heartbeat.header().msgSeqNum());
+            sleep(200);
 
-                connection.logout();
-                connection.readLogout();
-                assertFalse("Read a resent FIX message instead of a disconnect", connection.isConnected());
-            });
+            final HeartbeatDecoder heartbeat = exchangeTestRequestHeartbeat(connection, "ABC2");
+            assertFalse(heartbeat.header().hasPossDupFlag());
+            assertEquals(reportSeqNum + 1, heartbeat.header().msgSeqNum());
+
+            connection.logout();
+            testSystem.await(connection::readLogout);
+            testSystem.await("Read a resent FIX message instead of a disconnect", () -> !connection.isConnected());
         }
     }
 
@@ -412,45 +417,41 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     public void shouldRejectInvalidLogonWithMissingTargetCompId()
     {
         setup(true, true, true, SOLE_LIBRARY);
-
         setupLibrary();
 
-        testSystem.awaitBlocking(() ->
+        //  Create a logon message that will fail session level validation, but nothing else.
+        try (FixConnection connection = new FixConnection(
+            SocketChannel.open(new InetSocketAddress("localhost", port)),
+            INITIATOR_ID,
+            "\000"))
         {
-            //  Create a logon message that will fail session level validation, but nothing else.
-            try (FixConnection connection = new FixConnection(
-                SocketChannel.open(new InetSocketAddress("localhost", port)),
-                INITIATOR_ID,
-                "\000"))
-            {
-                final LogonEncoder logon = new LogonEncoder();
-                connection.setupHeader(logon.header(), connection.acquireMsgSeqNum(), false);
+            final LogonEncoder logon = new LogonEncoder();
+            connection.setupHeader(logon.header(), connection.acquireMsgSeqNum(), false);
 
-                logon
-                    .encryptMethod(0)
-                    .heartBtInt(20)
-                    .username("AAAAAAAAA")
-                    .password("asd");
+            logon
+              .encryptMethod(0)
+              .heartBtInt(20)
+              .username("AAAAAAAAA")
+                .password("asd");
 
-                final MutableAsciiBuffer asciiBuffer = new MutableAsciiBuffer(new byte[BUFFER_SIZE]);
-                final long result = logon.encode(asciiBuffer, 0);
-                final int offset = Encoder.offset(result);
-                final int length = Encoder.length(result);
+            final MutableAsciiBuffer asciiBuffer = new MutableAsciiBuffer(new byte[BUFFER_SIZE]);
+            final long result = logon.encode(asciiBuffer, 0);
+            final int offset = Encoder.offset(result);
+            final int length = Encoder.length(result);
 
-                // Remove the acceptor id whilst keeping the checksum the same
-                final byte[] badLogon = asciiBuffer.getAscii(offset, length)
-                    .replace("\000", "")
-                    .replace(INITIATOR_ID, INITIATOR_ID + "\000")
-                    .getBytes(US_ASCII);
+            // Remove the acceptor id whilst keeping the checksum the same
+            final byte[] badLogon = asciiBuffer.getAscii(offset, length)
+              .replace("\000", "")
+              .replace(INITIATOR_ID, INITIATOR_ID + "\000")
+              .getBytes(US_ASCII);
 
-                connection.sendBytes(badLogon);
-                assertFalse(connection.isConnected());
-            }
-            catch (final IOException e)
-            {
-                e.printStackTrace();
-            }
-        });
+            connection.sendBytes(badLogon);
+            testSystem.await(connection::isConnected);
+        }
+        catch (final IOException e)
+        {
+            e.printStackTrace();
+        }
 
         final List<SessionInfo> sessions = engine.allSessions();
         assertThat("sessions = " + sessions, sessions, hasSize(0));
@@ -471,16 +472,17 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
             testSystem.awaitBlocking(MessageBasedAcceptorSystemTest::sleepThrottleWindow);
 
-            final HeartbeatDecoder abc = connection.exchangeTestRequestHeartbeat("ABC");
+            testSystem.await(() -> connection.sendTestRequest("ABC"));
+            final HeartbeatDecoder abc = testSystem.await(() -> connection.readHeartbeat("ABC"));
             assertEquals(10, abc.header().msgSeqNum());
 
             // Test that resend requests work with throttle rejection
-            connection.sendResendRequest(4, 5);
+            testSystem.await(() -> connection.sendResendRequest(4, 5));
             assertReadsBusinessReject(connection, 4, 6, true, THROTTLE_MSG_LIMIT);
             assertReadsBusinessReject(connection, 5, 7, true, THROTTLE_MSG_LIMIT);
-            final HeartbeatDecoder def = connection.exchangeTestRequestHeartbeat("DEF");
+            testSystem.await(() -> connection.sendTestRequest("DEF"));
+            final HeartbeatDecoder def = testSystem.await(() -> connection.readHeartbeat("DEF"));
             assertEquals(11, def.header().msgSeqNum());
-            testSystem.poll();
 
             // Reset the throttle rate
             session = acquireSession();
@@ -488,16 +490,11 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 TEST_THROTTLE_WINDOW_IN_MS, RESET_THROTTLE_MSG_LIMIT));
             assertEquals(reply.toString(), OK, reply.resultIfPresent());
 
-            testSystem.awaitBlocking(() ->
-            {
-                sleepThrottleWindow();
+            sleepThrottleWindow();
+            assertMessagesRejectedAboveThrottleRate(connection, RESET_THROTTLE_MSG_LIMIT, 12, 20, 0);
+            sleepThrottleWindow();
 
-                assertMessagesRejectedAboveThrottleRate(connection, RESET_THROTTLE_MSG_LIMIT, 12, 20, 0);
-
-                sleepThrottleWindow();
-
-                connection.logoutAndAwaitReply();
-            });
+            logoutAndAwaitReply(connection);
         }
     }
 
@@ -512,18 +509,20 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             logon(connection);
             testSystem.poll();
 
-            final HeartbeatDecoder abc = connection.exchangeTestRequestHeartbeat("ABC");
+            connection.sendTestRequest("ABC");
+            final HeartbeatDecoder abc = testSystem.await(() -> connection.readHeartbeat("ABC"));
             assertEquals(2, abc.header().msgSeqNum());
 
             // shift msg seq num
             connection.msgSeqNum(connection.msgSeqNum() + 3);
             connection.sendResendRequest(1, 2);
             // answers with resend
-            connection.readResendRequest(3, 0);
+            testSystem.await(() -> connection.readResendRequest(3, 0));
             // because original resend request is not resent, but rather gap filled
             connection.sendGapFill(3, connection.msgSeqNum() + 1);
             // answers the resend as well
-            final SequenceResetDecoder sequenceResetDecoder = connection.readMessage(new SequenceResetDecoder());
+            final SequenceResetDecoder sequenceResetDecoder = testSystem.await(
+                () -> connection.readMessage(new SequenceResetDecoder()));
             assertEquals(sequenceResetDecoder.header().msgSeqNum(), 1);
             assertEquals(sequenceResetDecoder.newSeqNo(), 3);
         }
@@ -594,6 +593,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
             connection.msgSeqNum(1);
             connection.logon(true);
+            testSystem.awaitMessageOf(otfAcceptor, Constants.LOGON_MESSAGE_AS_STR,
+                msg -> msg.messageSequenceNumber() == 1);
 
             final int seqNum2 = connection.acquireMsgSeqNum();
             assertEquals(2, seqNum2);
@@ -602,8 +603,9 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 msg -> msg.messageSequenceNumber() == seqNum2 && msg.sequenceIndex() == 1);
 
             connection.sendResendRequest(2, 2);
-            testSystem.awaitBlocking(
-                () -> assertEquals(Side.SELL, connection.readResentExecutionReport(2).sideAsEnum()));
+            final ExecutionReportDecoder executionReportDecoder = testSystem.await(
+                () -> connection.readResentExecutionReport(2));
+            assertEquals(Side.SELL, executionReportDecoder.sideAsEnum());
         });
     }
 
@@ -618,15 +620,16 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         try (FixConnection connection = FixConnection.initiate(port))
         {
             connection.logon(false);
-            testSystem.awaitBlocking(() -> connection.readLogon(1));
+            testSystem.await("connection.readLogon returns null", () -> connection.readLogon(1) != null);
 
             session = handler.lastSession();
 
             connection.sendTestRequest("one");
-            testSystem.awaitBlocking(() -> connection.readHeartbeat("one"));
+            testSystem.await("connection.readHeartbeat returns null", () -> connection.readHeartbeat("one") != null);
 
             testSystem.awaitSend(session::tryResetSequenceNumbers);
-            final LogonDecoder resettingLogon = connection.readLogon(1);
+            final LogonDecoder resettingLogon = testSystem.await("connection.readHeartbeat returns null",
+                () -> connection.readLogon(1));
             assertTrue(resettingLogon.hasResetSeqNumFlag() && resettingLogon.resetSeqNumFlag());
         }
 
@@ -643,18 +646,82 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         try (FixConnection connection = FixConnection.initiate(port))
         {
             connection.logon(false);
-            testSystem.awaitBlocking(() -> connection.readLogon());
+            testSystem.await("connection.readLogon null", () -> connection.readLogon() != null);
 
             connection.sendTestRequest("two");
-            final HeartbeatDecoder hb = testSystem.awaitBlocking(() -> connection.readHeartbeat("two"));
+            final HeartbeatDecoder hb = testSystem.await("connection.readHeartbeat is null",
+                () -> connection.readHeartbeat("two"));
 
             connection.sendResendRequest(1, 0);
-            testSystem.awaitBlocking(() ->
+            testSystem.await(() -> connection.readSequenceResetGapFill(erSeqNum));
+            testSystem.await(() -> connection.readResentExecutionReport(erSeqNum));
+            testSystem.await(() -> connection.readSequenceResetGapFill(hb.header().msgSeqNum() + 1));
+        }
+    }
+
+    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    public void shouldSupportReplayingReceivedMessagesAfterReLoginAndReceiveResendRequest() throws IOException
+    {
+        final InitialAcceptedSessionOwner owner = ENGINE;
+        setup(false, true, true, owner);
+        setupLibrary();
+
+        int lastSeqNum = 0;
+        try (FixConnection connection = FixConnection.initiate(port))
+        {
+            awaitedLogon(connection);
+
+            final ReportFactory reportFactory = new ReportFactory();
+
+            if (owner == ENGINE)
             {
-                connection.readSequenceResetGapFill(erSeqNum);
-                connection.readResentExecutionReport(erSeqNum);
-                connection.readSequenceResetGapFill(hb.header().msgSeqNum() + 1);
-            });
+                session = acquireSession();
+            }
+            else
+            {
+                session = handler.lastSession();
+                assertNotNull(session);
+            }
+
+            while (!session.isSlowConsumer())
+            {
+                reportFactory.sendReport(testSystem, session, Side.BUY);
+            }
+
+            lastSeqNum = connection.msgSeqNum();
+            assertSessionDisconnected(testSystem, session);
+        }
+
+        try (FixConnection connection = FixConnection.initiate(port, lastSeqNum))
+        {
+            awaitedLogon(connection, false);
+
+            final ReportFactory reportFactory = new ReportFactory();
+
+            if (owner == ENGINE)
+            {
+                session = acquireSession();
+            }
+            else
+            {
+                session = handler.lastSession();
+                assertNotNull(session);
+            }
+            final ResendRequestEncoder resendRequest = reportFactory.setupResendRequest(1, 0);
+            resendRequest.header().msgSeqNum(connection.msgSeqNum());
+            connection.send(resendRequest);
+
+            awaitedMessage(connection, new SequenceResetDecoder());
+            connection.close();
+            try
+            {
+                Thread.sleep(200);
+            }
+            catch (final InterruptedException e)
+            {
+                throw new RuntimeException(e);
+            }
+            assertSessionDisconnected(testSystem, session);
         }
     }
 
@@ -687,15 +754,12 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
         try (FixConnection connection = FixConnection.initiate(port))
         {
-            testSystem.awaitBlocking(() ->
-            {
-                connection.logon(false);
+            connection.logon(false);
 
-                final LogonDecoder logonReply = connection.readLogon();
-                assertEquals(1, logonReply.header().msgSeqNum());
+            final LogonDecoder logonReply = testSystem.await(connection::readLogon);
+            assertEquals(1, logonReply.header().msgSeqNum());
 
-                connection.readLogout();
-            });
+            testSystem.await(connection::readLogout);
         }
 
         assertTrue(handler.onSessionStartCalled());
@@ -708,11 +772,12 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         reasonableTransmissionTimeInMs = 1;
 
         setup(true, true, true, ENGINE);
+        testSystem = new TestSystem();
 
         try (FixConnection connection = FixConnection.initiate(port))
         {
             connection.logon(true, timeoutDisconnectHeartBtIntInS);
-            final LogonDecoder logon = connection.readLogon();
+            final LogonDecoder logon = testSystem.await(connection::readLogon);
             assertTrue(logon.resetSeqNumFlag());
 
             processTimeoutDisconnect(connection);
@@ -736,13 +801,13 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         {
             connection.logon(true, timeoutDisconnectHeartBtIntInS);
             //noinspection Convert2MethodRef
-            final LogonDecoder logon = testSystem.awaitBlocking(() -> connection.readLogon());
+            final LogonDecoder logon = testSystem.await(() -> connection.readLogon());
             assertTrue(logon.resetSeqNumFlag());
 
             session = handler.lastSession();
             assertNotNull(session);
 
-            final long logoutTimeInMs = testSystem.awaitBlocking(() -> processTimeoutDisconnect(connection));
+            final long logoutTimeInMs = processTimeoutDisconnect(connection);
             SystemTestUtil.assertSessionDisconnected(testSystem, session);
 
             assertPromptDisconnect(logoutTimeInMs, onDisconnect.timeInMs());
@@ -752,15 +817,15 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
     private long processTimeoutDisconnect(final FixConnection connection)
     {
-        connection.readHeartbeat();
-        final TestRequestDecoder testRequest = connection.readTestRequest();
+        testSystem.await(connection::readHeartbeat);
+        final TestRequestDecoder testRequest = testSystem.await(connection::readTestRequest);
         assertEquals("TEST", testRequest.testReqIDAsString());
 
-        connection.readHeartbeat();
-        connection.readLogout();
+        testSystem.await(connection::readHeartbeat);
+        testSystem.await(connection::readLogout);
         final long logoutTimeInMs = System.currentTimeMillis();
 
-        assertFalse(connection.isConnected());
+        testSystem.await(() -> !connection.isConnected());
         final long disconnectTimeInMs = System.currentTimeMillis();
 
         assertPromptDisconnect(logoutTimeInMs, disconnectTimeInMs);
@@ -806,7 +871,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             session = acquireSession();
             ReportFactory.sendOneReport(testSystem, session, Side.SELL);
 
-            final ExecutionReportDecoder executionReport = connection.readExecutionReport();
+            final ExecutionReportDecoder executionReport = testSystem.await(connection::readExecutionReport);
             assertSell(executionReport);
             final int msgSeqNum = executionReport.header().msgSeqNum();
 
@@ -817,24 +882,19 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             assertThat(highSeqNum, greaterThan(msgSeqNum));
             final long position = testSystem.awaitSend(() -> session.trySendSequenceReset(highSeqNum, highSeqNum));
 
-            testSystem.awaitBlocking(() ->
-            {
-                final SequenceResetDecoder sequenceReset = connection.readSequenceReset();
-                assertFalse(sequenceReset.toString(), sequenceReset.hasGapFillFlag());
-                assertEquals(highSeqNum, sequenceReset.newSeqNo());
-            });
+            final SequenceResetDecoder sequenceReset = testSystem.await(connection::readSequenceReset);
+            assertFalse(sequenceReset.toString(), sequenceReset.hasGapFillFlag());
+            assertEquals(highSeqNum, sequenceReset.newSeqNo());
 
             testSystem.awaitPosition(libraryPosition, position);
 
-            testSystem.awaitBlocking(() ->
-            {
-                // Then you get the resend
-                connection.msgSeqNum(highSeqNum).sendResendRequest(1, 0);
-                connection.readSequenceResetGapFill(msgSeqNum);
-                final ExecutionReportDecoder executionReportResent = connection.readExecutionReport(msgSeqNum);
-                assertSell(executionReportResent);
-                connection.readSequenceResetGapFill(highSeqNum);
-            });
+            // Then you get the resend
+            connection.msgSeqNum(highSeqNum).sendResendRequest(1, 0);
+            testSystem.await(() -> connection.readSequenceResetGapFill(msgSeqNum));
+            final ExecutionReportDecoder executionReportResent = testSystem.await(
+                () -> connection.readExecutionReport(msgSeqNum));
+            assertSell(executionReportResent);
+            testSystem.await(() -> connection.readSequenceResetGapFill(highSeqNum));
         }
     }
 
@@ -844,7 +904,6 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         printErrors = true;
 
         setup(false, true, true, SOLE_LIBRARY);
-
         setupLibrary();
 
         int highestPrevSeqNum = 0;
@@ -853,7 +912,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         try (FixConnection connection = FixConnection.initiate(port))
         {
             connection.logon(false);
-            testSystem.awaitBlocking(() -> connection.readLogon(1));
+            testSystem.await(() -> connection.readLogon(1));
 
             session = handler.lastSession();
             assertNotNull(session);
@@ -866,7 +925,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             }
             for (int i = 0; i < erCount; i++)
             {
-                highestPrevSeqNum = connection.readExecutionReport().header().msgSeqNum();
+                highestPrevSeqNum = testSystem.await(connection::readExecutionReport).header().msgSeqNum();
             }
         }
 
@@ -885,11 +944,11 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         {
             // reconnect with sequence numbers reset
             connection.logon(false);
-            testSystem.awaitBlocking(() -> connection.readLogon(1));
+            testSystem.await(() -> connection.readLogon(1));
 
             // make the acceptor send an execution report, so that we can request a resend of something
             reportFactory.sendReport(testSystem, session, Side.SELL);
-            final ExecutionReportDecoder er = connection.readExecutionReport();
+            final ExecutionReportDecoder er = testSystem.await(connection::readExecutionReport);
             assertSell(er);
 
             // now request a resend of the execution report, which should get serviced, while making sure the sequence
@@ -897,7 +956,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             final int erSeqNum = er.header().msgSeqNum();
             assertThat(erSeqNum, lessThan(highestPrevSeqNum));
             connection.sendResendRequest(erSeqNum, 0);
-            testSystem.awaitBlocking(() -> connection.readResentExecutionReport(erSeqNum));
+            testSystem.await(() -> connection.readResentExecutionReport(erSeqNum));
         }
     }
 
@@ -1007,8 +1066,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
         try (FixConnection connection = FixConnection.initiate(port))
         {
-            awaitedLogon(connection);
-
+            logon(connection);
             final ReportFactory reportFactory = new ReportFactory();
 
             if (owner == ENGINE)
@@ -1021,7 +1079,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
                 assertNotNull(session);
             }
             reportFactory.sendReport(testSystem, session, Side.BUY);
-            connection.readExecutionReport(2);
+            testSystem.await(() -> connection.readExecutionReport(2));
             connection.sendExecutionReport(connection.acquireMsgSeqNum(), false);
             testSystem.awaitReceivedSequenceNumber(session, 2);
 
@@ -1030,8 +1088,9 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             assertEquals(2, session.lastSentMsgSeqNum());
             assertEquals(2, session.lastReceivedMsgSeqNum());
 
-            assertTrue(connection.readLogon(1).resetSeqNumFlag());
-            connection.readExecutionReport(2);
+            final LogonDecoder logonDecoder = testSystem.await(() -> connection.readLogon(1));
+            assertTrue(logonDecoder.resetSeqNumFlag());
+            testSystem.await(() -> connection.readExecutionReport(2));
 
             // Last sequence numbers Artio->Client: 2, Client->Artio: 2, client needs to send logon,seqnum=1 after
             onNext.accept(connection, reportFactory);
@@ -1073,7 +1132,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         final boolean possDup,
         final int limitOfMessages)
     {
-        final BusinessMessageRejectDecoder reject = connection.readBusinessReject();
+        final BusinessMessageRejectDecoder reject = testSystem.await(connection::readBusinessReject);
         final HeaderDecoder header = reject.header();
         assertEquals(seqNum, header.msgSeqNum());
         assertEquals(ACCEPTOR_ID, header.senderCompIDAsString());
@@ -1149,7 +1208,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         try (FixConnection connection = FixConnection.initiate(port))
         {
             logon(connection);
-            connection.logoutAndAwaitReply();
+            logoutAndAwaitReply(connection);
         }
     }
 }

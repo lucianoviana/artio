@@ -193,6 +193,7 @@ public class CancelOnDisconnectSystemTest extends AbstractGatewayToGatewaySystem
         acquireAcceptingSession();
 
         disconnectSession(initiatingSession);
+        testSystem.await(() -> !acceptingSession.isConnected());
 
         assertTriggersCancelOnDisconnectFromDefaults(CancelOnDisconnectOption.CANCEL_ON_DISCONNECT_ONLY, 0);
     }
@@ -370,7 +371,7 @@ public class CancelOnDisconnectSystemTest extends AbstractGatewayToGatewaySystem
         assertEquals(onlySession.sessionKey(), result.compositeId);
         final long timeoutTakenInNs = result.timeInNs - logoutTimeInNs;
         assertThat(timeoutTakenInNs, greaterThanOrEqualTo(codTimeoutInNs));
-        assertEquals(1, timeoutHandler.invokeCount());
+        testSystem.await(() -> timeoutHandler.invokeCount() == 1);
     }
 
     private void assertInitiatorCodState(

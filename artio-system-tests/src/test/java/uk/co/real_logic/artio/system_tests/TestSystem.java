@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
@@ -277,6 +278,35 @@ public class TestSystem
         await(message, () -> (value[0] = operation.get()) != null);
         return (T)value[0];
     }
+
+    public <T> T await(final Supplier<T> supplier)
+    {
+        final AtomicReference<T> aux = new AtomicReference<>(null);
+        assertEventuallyTrue(
+            "lambda returns null",
+            () ->
+            {
+                poll();
+                aux.set(supplier.get());
+                return aux.get() != null;
+            });
+        return aux.get();
+    }
+
+    public <T> T await(final String message, final Supplier<T> supplier)
+    {
+        final AtomicReference<T> aux = new AtomicReference<>(null);
+        assertEventuallyTrue(
+            message,
+            () ->
+            {
+                poll();
+                aux.set(supplier.get());
+                return aux.get() != null;
+            });
+        return aux.get();
+    }
+
 
     public void await(final String message, final BooleanSupplier predicate)
     {

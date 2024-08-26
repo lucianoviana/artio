@@ -58,7 +58,7 @@ public class TestRequestOutOfSequenceShouldNotTriggerHeartbeatBeforeResendReques
     @Test
     public void testRequestWithIncorrectSeqNumShouldNotTriggerHeartbeat() throws IOException
     {
-        try (FixConnection connection = FixConnection.initiate(port))
+        try (FixConnection connection = FixConnection.initiate(port, true))
         {
             connection.logon(true);
             connection.readLogon(1);

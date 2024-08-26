@@ -77,10 +77,29 @@ public final class FixConnection implements AutoCloseable
 
     public static FixConnection initiate(final int port) throws IOException
     {
+        return initiate(port, false);
+    }
+
+    public static FixConnection initiate(final int port, final boolean configureBlocking) throws IOException
+    {
+        return initiate(port, 1, configureBlocking);
+    }
+
+    public static FixConnection initiate(final int port, final int lastSeqNum) throws IOException
+    {
+        return initiate(port, lastSeqNum, false);
+    }
+
+    public static FixConnection initiate(final int port,
+        final int lastSeqNum,
+        final boolean configureBlocking) throws IOException
+    {
         return new FixConnection(
-            SocketChannel.open(new InetSocketAddress("localhost", port)),
-            INITIATOR_ID,
-            ACCEPTOR_ID);
+          SocketChannel.open(new InetSocketAddress("localhost", port)),
+          INITIATOR_ID,
+          ACCEPTOR_ID,
+          lastSeqNum,
+          configureBlocking);
     }
 
     public static FixConnection accept(final int port, final Runnable connectOperation) throws IOException
@@ -109,9 +128,35 @@ public final class FixConnection implements AutoCloseable
 
     public FixConnection(final SocketChannel socket, final String senderCompID, final String targetCompID)
     {
+        this(socket, senderCompID, targetCompID, 1);
+    }
+
+    public FixConnection(final SocketChannel socket,
+        final String senderCompID,
+        final String targetCompID,
+        final int initSeqNum)
+    {
+        this(socket, senderCompID, targetCompID, initSeqNum, false);
+    }
+
+    public FixConnection(final SocketChannel socket,
+        final String senderCompID,
+        final String targetCompID,
+        final int initSeqNum,
+        final boolean configureBlocking)
+    {
         this.socket = socket;
         this.senderCompID = senderCompID;
         this.targetCompID = targetCompID;
+        this.msgSeqNum = initSeqNum;
+        try
+        {
+            socket.configureBlocking(configureBlocking);
+        }
+        catch (final IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     // Can read data
@@ -323,6 +368,10 @@ public final class FixConnection implements AutoCloseable
     public ExecutionReportDecoder readExecutionReport(final int msgSeqNum)
     {
         final ExecutionReportDecoder executionReport = readExecutionReport();
+        if (executionReport == null)
+        {
+            return null;
+        }
         assertSeqNum(msgSeqNum, executionReport);
         return executionReport;
     }
@@ -330,6 +379,10 @@ public final class FixConnection implements AutoCloseable
     public ExecutionReportDecoder readResentExecutionReport(final int msgSeqNum)
     {
         final ExecutionReportDecoder executionReport = readExecutionReport(msgSeqNum);
+        if (executionReport == null)
+        {
+            return null;
+        }
         assertTrue(executionReport.header().possDupFlag());
         return executionReport;
     }
@@ -339,6 +392,10 @@ public final class FixConnection implements AutoCloseable
         try
         {
             final int bytesToParse = bytesRemaining == 0 ? socket.read(readBuffer) : bytesRemaining;
+            if (bytesToParse == 0)
+            {
+                return null;
+            }
             ascii = asciiReadBuffer.getAscii(OFFSET, bytesToParse);
 
             DebugLogger.log(FIX_TEST,
@@ -351,6 +408,10 @@ public final class FixConnection implements AutoCloseable
             }
 
             decoder.decode(asciiReadBuffer, OFFSET, endOfMessage);
+            if (MsgTypeByDecoderMap.getMessageTypeOf((MessageDecoder)decoder) != decoder.header().messageType())
+            {
+                return null;
+            }
 
             if (!decoder.validate())
             {
@@ -407,17 +468,17 @@ public final class FixConnection implements AutoCloseable
         return read;
     }
 
-    public void send(final Encoder encoder)
+    public int send(final Encoder encoder)
     {
         final long result = encoder.encode(writeAsciiBuffer, OFFSET);
         final int offset = Encoder.offset(result);
         final int length = Encoder.length(result);
         encoder.reset();
 
-        send(offset, length);
+        return send(offset, length);
     }
 
-    private void send(final int offset, final int length)
+    private int send(final int offset, final int length)
     {
         try
         {
@@ -426,11 +487,13 @@ public final class FixConnection implements AutoCloseable
             assertEquals(length, written);
             DebugLogger.log(FIX_TEST, "> [" + writeAsciiBuffer.getAscii(offset, length) + "]");
             writeBuffer.clear();
+            return written;
         }
         catch (final IOException ex)
         {
             LangUtil.rethrowUnchecked(ex);
         }
+        return -1;
     }
 
     public LogonDecoder readLogon()
@@ -446,6 +509,10 @@ public final class FixConnection implements AutoCloseable
     public SequenceResetDecoder readSequenceResetGapFill(final int newSeqNo)
     {
         final SequenceResetDecoder sequenceReset = readSequenceReset();
+        if (sequenceReset == null)
+        {
+            return null;
+        }
         final String msg = sequenceReset.toString();
         assertTrue(msg, sequenceReset.header().possDupFlag());
         assertTrue(msg, sequenceReset.hasGapFillFlag());
@@ -456,6 +523,10 @@ public final class FixConnection implements AutoCloseable
     public LogonDecoder readLogon(final int msgSeqNum)
     {
         final LogonDecoder logonReply = readLogon();
+        if (logonReply == null)
+        {
+            return null;
+        }
         assertSeqNum(msgSeqNum, logonReply);
         return logonReply;
     }
@@ -478,6 +549,10 @@ public final class FixConnection implements AutoCloseable
     public ResendRequestDecoder readResendRequest(final int beginSeqNo, final int endSeqNo)
     {
         final ResendRequestDecoder resendRequest = readMessage(new ResendRequestDecoder());
+        if (resendRequest == null)
+        {
+            return null;
+        }
         assertEquals(resendRequest.toString(), beginSeqNo, resendRequest.beginSeqNo());
         assertEquals(resendRequest.toString(), endSeqNo, resendRequest.endSeqNo());
         return resendRequest;
@@ -494,16 +569,25 @@ public final class FixConnection implements AutoCloseable
         return readHeartbeat(testReqID);
     }
 
-    public void sendTestRequest(final String testReqID)
+    public int sendTestRequest(final String testReqID)
     {
-        setupHeader(testRequestEncoder.header(), msgSeqNum++, false);
+        setupHeader(testRequestEncoder.header(), msgSeqNum, false);
         testRequestEncoder.testReqID(testReqID);
-        send(testRequestEncoder);
+        final int result = send(testRequestEncoder);
+        if (result > 0)
+        {
+            msgSeqNum++;
+        }
+        return result;
     }
 
     public HeartbeatDecoder readHeartbeat(final String testReqID)
     {
         final HeartbeatDecoder heartbeat = readHeartbeat();
+        if (heartbeat == null)
+        {
+            return null;
+        }
         final String message = lastMessageAsString();
         assertTrue(message, heartbeat.hasTestReqID());
         assertEquals(message, testReqID, heartbeat.testReqIDAsString());
@@ -586,10 +670,17 @@ public final class FixConnection implements AutoCloseable
         final ResendRequestEncoder resendRequest = new ResendRequestEncoder();
 
         resendRequest.beginSeqNo(beginSeqNo).endSeqNo(endSeqNo);
-        setupHeader(resendRequest.header(), msgSeqNum++, false);
-        send(resendRequest);
-
-        return resendRequest;
+        setupHeader(resendRequest.header(), msgSeqNum, false);
+        final int result = send(resendRequest);
+        if (result > 0)
+        {
+            msgSeqNum++;
+            return resendRequest;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public int msgSeqNum()

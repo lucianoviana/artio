@@ -161,7 +161,7 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
     {
         final long acceptingSessionId = acceptingSession.id();
         exchangeMessages();
-        initiatingSession.startLogout();
+        testSystem.await(initiatingSession::startLogout);
         assertSessionsDisconnected();
 
         beforeReset.run();
@@ -180,7 +180,7 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
 
     private int exchangeMessages()
     {
-        OrderFactory.sendOrder(initiatingSession);
+        testSystem.await(() -> initiatingSession.trySend(OrderFactory.makeOrder()));
 
         final FixMessage executionReport =
             testSystem.awaitMessageOf(initiatingOtfAcceptor, EXECUTION_REPORT_MESSAGE_AS_STR);
