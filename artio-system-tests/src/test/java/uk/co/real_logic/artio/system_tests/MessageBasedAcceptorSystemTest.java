@@ -687,6 +687,10 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             {
                 reportFactory.sendReport(testSystem, session, Side.BUY);
             }
+            while (session.isConnected())
+            {
+                reportFactory.sendReport(testSystem, session, Side.SELL);
+            }
 
             lastSeqNum = connection.msgSeqNum();
             assertSessionDisconnected(testSystem, session);
@@ -713,14 +717,6 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
             awaitedMessage(connection, new SequenceResetDecoder());
             connection.close();
-            try
-            {
-                Thread.sleep(200);
-            }
-            catch (final InterruptedException e)
-            {
-                throw new RuntimeException(e);
-            }
             assertSessionDisconnected(testSystem, session);
         }
     }
