@@ -441,9 +441,9 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
             // Remove the acceptor id whilst keeping the checksum the same
             final byte[] badLogon = asciiBuffer.getAscii(offset, length)
-              .replace("\000", "")
-              .replace(INITIATOR_ID, INITIATOR_ID + "\000")
-              .getBytes(US_ASCII);
+                .replace("\000", "")
+                .replace(INITIATOR_ID, INITIATOR_ID + "\000")
+                .getBytes(US_ASCII);
 
             connection.sendBytes(badLogon);
             testSystem.await(connection::isConnected);
