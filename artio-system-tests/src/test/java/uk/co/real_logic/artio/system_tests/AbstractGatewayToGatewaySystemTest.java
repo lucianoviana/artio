@@ -148,8 +148,8 @@ public class AbstractGatewayToGatewaySystemTest
     {
         TestHelper.clearPollStatus(initiatingLibrary);
         Exceptions.closeAll(
-            this::closeInitiatingEngine,
             this::closeAcceptingEngine,
+            this::closeInitiatingEngine,
             initiatingLibrary,
             this::closeAcceptingLibrary,
             logger,
