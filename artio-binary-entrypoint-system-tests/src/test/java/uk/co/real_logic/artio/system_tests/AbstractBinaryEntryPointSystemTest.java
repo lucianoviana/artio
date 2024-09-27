@@ -224,8 +224,8 @@ public class AbstractBinaryEntryPointSystemTest
 
     void closeArtio()
     {
-        testSystem.awaitBlocking(() -> CloseHelper.close(engine));
         testSystem.close(library);
+        CloseHelper.close(engine);
     }
 
     BinaryEntryPointClient establishNewConnection() throws IOException
