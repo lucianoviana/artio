@@ -63,7 +63,6 @@ import static uk.co.real_logic.artio.system_tests.AbstractMessageBasedAcceptorSy
 import static uk.co.real_logic.artio.system_tests.AbstractMessageBasedAcceptorSystemTest.THROTTLE_MSG_LIMIT;
 import static uk.co.real_logic.artio.system_tests.BinaryEntryPointClient.CL_ORD_ID;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.ACCEPTOR_LOGS;
-import static uk.co.real_logic.artio.system_tests.SystemTestUtil.IDLE_STRATEGY;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.TEST_REPLY_TIMEOUT_IN_MS;
 
 public class AbstractBinaryEntryPointSystemTest
@@ -171,7 +170,6 @@ public class AbstractBinaryEntryPointSystemTest
         final EngineConfiguration engineConfig = new EngineConfiguration()
             .logFileDir(ACCEPTOR_LOGS)
             .scheduler(new LowResourceEngineScheduler())
-            .framerIdleStrategy(IDLE_STRATEGY)
             .libraryAeronChannel(IPC_CHANNEL)
             .slowConsumerTimeoutInMs(TEST_REPLY_TIMEOUT_IN_MS)
             .replyTimeoutInMs(TEST_REPLY_TIMEOUT_IN_MS)
