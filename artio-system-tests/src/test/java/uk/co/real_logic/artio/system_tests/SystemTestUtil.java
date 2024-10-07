@@ -94,6 +94,10 @@ public final class SystemTestUtil
 
     private static final int TEST_COMPACTION_SIZE = 1024 * 1024;
 
+    public static final IdleStrategy IDLE_STRATEGY = new YieldingIdleStrategy();
+
+    public static final Object LOCK = new Object();
+
     static
     {
         final File parentDirectory = new File(optimalTmpDirName());
@@ -132,7 +136,11 @@ public final class SystemTestUtil
     static long sendTestRequest(
         final TestSystem testSystem, final Session session, final String testReqID, final FixDictionary fixDictionary)
     {
-        assertEventuallyTrue("Session not connected", session::isConnected);
+        assertEventuallyTrue("Session not connected",
+            () ->
+            {
+                session.isConnected();
+            });
 
         return alwaysSendTestRequest(testSystem, session, testReqID, fixDictionary);
     }
@@ -260,6 +268,7 @@ public final class SystemTestUtil
             .monitoringFile(optimalTmpDirName() + File.separator + "fix-client" + File.separator + "engineCounters")
             .logFileDir(CLIENT_LOGS)
             .scheduler(new LowResourceEngineScheduler())
+            .framerIdleStrategy(IDLE_STRATEGY)
             .slowConsumerTimeoutInMs(TEST_REPLY_TIMEOUT_IN_MS)
             .replyTimeoutInMs(TEST_REPLY_TIMEOUT_IN_MS);
         configuration.epochNanoClock(nanoClock);
@@ -309,6 +318,7 @@ public final class SystemTestUtil
             .logFileDir(acceptorLogs)
             .scheduler(new LowResourceEngineScheduler())
             .slowConsumerTimeoutInMs(TEST_REPLY_TIMEOUT_IN_MS)
+            .framerIdleStrategy(IDLE_STRATEGY)
             .replyTimeoutInMs(TEST_REPLY_TIMEOUT_IN_MS);
     }
 
