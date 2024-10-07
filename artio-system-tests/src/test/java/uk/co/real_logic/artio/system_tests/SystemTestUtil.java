@@ -94,6 +94,8 @@ public final class SystemTestUtil
 
     private static final int TEST_COMPACTION_SIZE = 1024 * 1024;
 
+    public static final Object LOCK = new Object();
+
     static
     {
         final File parentDirectory = new File(optimalTmpDirName());
