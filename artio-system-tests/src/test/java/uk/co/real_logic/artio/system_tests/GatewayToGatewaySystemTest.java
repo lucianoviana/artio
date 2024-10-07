@@ -342,6 +342,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         acceptingOtfAcceptor.messages().clear();
 
+        Thread.yield();
+
         // Send two resend requests in order to trigger the repeat control case
         acceptorSendsResendRequest(1, 0);
         acceptorSendsResendRequest(1, 0);

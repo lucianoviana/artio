@@ -21,6 +21,9 @@ import org.agrona.LangUtil;
 import org.agrona.collections.Long2LongHashMap;
 import org.agrona.concurrent.status.ReadablePosition;
 import org.hamcrest.Matcher;
+
+import uk.co.real_logic.artio.DebugLogger;
+import uk.co.real_logic.artio.LogTag;
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.Timing;
 import uk.co.real_logic.artio.builder.Encoder;
@@ -173,8 +176,18 @@ public class TestSystem
             () ->
             {
                 poll();
-
-                return !reply.isExecuting();
+                final boolean result = reply.isExecuting();
+                if (reply.hasErrored())
+                {
+                    DebugLogger.log(LogTag.FIX_TEST,
+                        String.format("replay has errored state: [%s] error: [%s]", reply.state(), reply.error()));
+                }
+                if (reply.hasTimedOut())
+                {
+                    DebugLogger.log(LogTag.FIX_TEST,
+                        String.format("replay has timed out state: [%s] error: [%s]", reply.state(), reply.error()));
+                }
+                return !result;
             },
             DEFAULT_TIMEOUT_IN_MS,
             Exceptions::printStackTracesForAllThreads);

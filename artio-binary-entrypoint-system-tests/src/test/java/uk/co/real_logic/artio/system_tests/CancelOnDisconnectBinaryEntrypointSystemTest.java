@@ -186,17 +186,14 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
 
     private void assertHandlerNotInvoked(final int codTestTimeoutInMs)
     {
-        testSystem.awaitBlocking(() ->
+        try
         {
-            try
-            {
-                Thread.sleep(codTestTimeoutInMs);
-            }
-            catch (final InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-        });
+            Thread.sleep(codTestTimeoutInMs);
+        }
+        catch (final InterruptedException e)
+        {
+            e.printStackTrace();
+        }
 
         assertNull(timeoutHandler.result);
         assertEquals(0, timeoutHandler.invokeCount());

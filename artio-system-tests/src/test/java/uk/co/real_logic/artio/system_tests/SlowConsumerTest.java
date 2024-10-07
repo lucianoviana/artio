@@ -137,6 +137,7 @@ public class SlowConsumerTest
         while (!socketIsConnected())
         {
             testSystem.poll();
+            Thread.yield();
         }
 
         assertNotSlow();
@@ -157,6 +158,7 @@ public class SlowConsumerTest
             }
 
             testSystem.poll();
+            Thread.yield();
         }
 
         bytesInBufferAtLeast(sessionInfo, senderMaxBytesInBuffer);
@@ -175,6 +177,7 @@ public class SlowConsumerTest
         while (!handler.isSlow(session))
         {
             testSystem.poll();
+            Thread.yield();
         }
 
         assertTrue(session.isSlowConsumer());
@@ -211,6 +214,7 @@ public class SlowConsumerTest
         socket.configureBlocking(false);
 
         testSystem.poll();
+        Thread.yield();
 
         // Get out of slow state
         while (sessionInfo.bytesInBuffer() > 0 || handler.isSlow(session))
@@ -224,6 +228,7 @@ public class SlowConsumerTest
             while (bytesRead > 0);
 
             testSystem.poll();
+            Thread.yield();
         }
 
         assertNotSlow();
@@ -275,6 +280,7 @@ public class SlowConsumerTest
             }
         }
         testSystem.poll();
+        Thread.yield();
 
         assertIsSlow();
         return sessionInfo;
