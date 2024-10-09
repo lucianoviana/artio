@@ -85,6 +85,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
     public static final boolean METADATA_OFF = false;
 
     private boolean testWithMetaData = METADATA_OFF;
+    private int orderId;
 
     @Before
     public void launch()
@@ -354,7 +355,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
             return count >= 1;
         });
 
-        testSystem.await(() -> fakeResendRequestController.callCount() == 2);
+        assertEquals(2, fakeResendRequestController.callCount());
     }
 
     // Test exists to replicate a faily complex bug involving a sequence number issue after a library timeout.
@@ -1329,16 +1330,20 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
     private void exchangeExecutionReport(final Session session, final FakeOtfAcceptor otfAcceptor)
     {
+        orderId++;
+        final String newOrderId = "order" + orderId;
         final ExecutionReportEncoder executionReport = new ExecutionReportEncoder();
         executionReport
-            .orderID("order")
+            .orderID(newOrderId)
             .execID("exec")
             .execType(ExecType.FILL)
             .ordStatus(OrdStatus.FILLED)
             .side(Side.BUY);
         executionReport.instrument().symbol("IBM");
         testSystem.awaitSend(() -> session.trySend(executionReport));
-        testSystem.awaitMessageOf(otfAcceptor, EXECUTION_REPORT_MESSAGE_AS_STR);
+        testSystem.awaitMessageOf(otfAcceptor,
+            EXECUTION_REPORT_MESSAGE_AS_STR,
+            msg -> msg.get(ORDER_ID).equals(newOrderId));
     }
 
     private void reacquireSession(
