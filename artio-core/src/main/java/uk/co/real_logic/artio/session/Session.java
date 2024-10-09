@@ -1862,7 +1862,7 @@ public class Session
 
         lastReceivedMsgSeqNum(msgSeqNo);
 
-        cancelOnDisconnect.checkCancelOnDisconnectLogout(this::timeInNs);
+        cancelOnDisconnect.checkCancelOnDisconnectLogout(timeInNs);
 
         if (state() == AWAITING_LOGOUT)
         {

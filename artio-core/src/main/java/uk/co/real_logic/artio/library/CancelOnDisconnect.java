@@ -6,7 +6,6 @@ import uk.co.real_logic.artio.messages.CancelOnDisconnectOption;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.LongPredicate;
-import java.util.function.LongSupplier;
 
 import static uk.co.real_logic.artio.messages.CancelOnDisconnectOption.*;
 
@@ -35,28 +34,29 @@ public final class CancelOnDisconnect
         this.enqueueTask = enqueueTask;
     }
 
-    public void checkCancelOnDisconnectLogout(final LongSupplier timeInNsSupplier)
+    public void checkCancelOnDisconnectLogout(final long timeInNs)
     {
-        if (!notifyCancelOnDisconnect(timeInNsSupplier, CANCEL_ON_LOGOUT_ONLY))
+        if (!notifyCancelOnDisconnect(timeInNs, CANCEL_ON_LOGOUT_ONLY))
         {
-            enqueueTask.accept(() -> notifyCancelOnDisconnect(timeInNsSupplier, CANCEL_ON_LOGOUT_ONLY));
+            enqueueTask.accept(() -> notifyCancelOnDisconnect(timeInNs, CANCEL_ON_LOGOUT_ONLY));
         }
     }
 
     public void checkCancelOnDisconnectDisconnect()
     {
-        if (!notifyCancelOnDisconnect(clock::nanoTime, CANCEL_ON_DISCONNECT_ONLY))
+        final long timeInNs = clock.nanoTime();
+        if (!notifyCancelOnDisconnect(timeInNs, CANCEL_ON_DISCONNECT_ONLY))
         {
-            enqueueTask.accept(() -> notifyCancelOnDisconnect(clock::nanoTime, CANCEL_ON_DISCONNECT_ONLY));
+            enqueueTask.accept(() -> notifyCancelOnDisconnect(timeInNs, CANCEL_ON_DISCONNECT_ONLY));
         }
     }
 
-    private boolean notifyCancelOnDisconnect(final LongSupplier timeInNsSupplier, final CancelOnDisconnectOption option)
+    private boolean notifyCancelOnDisconnect(final long timeInNs, final CancelOnDisconnectOption option)
     {
         if (isAcceptor && (cancelOnDisconnectOption == option ||
             cancelOnDisconnectOption == CANCEL_ON_DISCONNECT_OR_LOGOUT))
         {
-            final long deadlineInNs = timeInNsSupplier.getAsLong() + cancelOnDisconnectTimeoutWindowInNs;
+            final long deadlineInNs = timeInNs + cancelOnDisconnectTimeoutWindowInNs;
             return sendCancelOnDisconnectTrigger.test(deadlineInNs);
         }
 

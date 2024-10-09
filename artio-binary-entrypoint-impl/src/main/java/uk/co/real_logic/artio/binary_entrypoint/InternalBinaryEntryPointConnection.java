@@ -667,7 +667,7 @@ class InternalBinaryEntryPointConnection
     public Action onTerminate(
         final long sessionID, final long sessionVerID, final TerminationCode terminationCode)
     {
-        cancelOnDisconnect.checkCancelOnDisconnectLogout(clock::nanoTime);
+        cancelOnDisconnect.checkCancelOnDisconnectLogout(clock.nanoTime());
 
         // We initiated termination
         if (state == State.UNBINDING)
