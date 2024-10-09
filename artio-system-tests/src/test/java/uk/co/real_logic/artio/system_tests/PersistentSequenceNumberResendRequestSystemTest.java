@@ -91,7 +91,7 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
         launch(AUTOMATIC_INITIAL_SEQUENCE_NUMBER);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldReplayMessageBeforeARestart()
     {
         final int resendSeqNum = exchangeMessages();
@@ -136,14 +136,14 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
             }, 5000);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldNotBeAbleToReplayMessagesFromBeforeReset1()
     {
         // reset when ReplayIndex instances exist
         shouldNotBeAbleToReplayMessagesFromBeforeReset0(() -> {});
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldNotBeAbleToReplayMessagesFromBeforeReset2()
     {
         // reset when ReplayIndex instances do not exist
@@ -161,7 +161,7 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
     {
         final long acceptingSessionId = acceptingSession.id();
         exchangeMessages();
-        initiatingSession.startLogout();
+        testSystem.await(initiatingSession::startLogout);
         assertSessionsDisconnected();
 
         beforeReset.run();
@@ -180,7 +180,7 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
 
     private int exchangeMessages()
     {
-        OrderFactory.sendOrder(initiatingSession);
+        testSystem.await(() -> initiatingSession.trySend(OrderFactory.makeOrder()));
 
         final FixMessage executionReport =
             testSystem.awaitMessageOf(initiatingOtfAcceptor, EXECUTION_REPORT_MESSAGE_AS_STR);

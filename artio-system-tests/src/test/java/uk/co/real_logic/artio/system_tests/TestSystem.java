@@ -21,6 +21,9 @@ import org.agrona.LangUtil;
 import org.agrona.collections.Long2LongHashMap;
 import org.agrona.concurrent.status.ReadablePosition;
 import org.hamcrest.Matcher;
+
+import uk.co.real_logic.artio.DebugLogger;
+import uk.co.real_logic.artio.LogTag;
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.Timing;
 import uk.co.real_logic.artio.builder.Encoder;
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Predicate;
@@ -53,6 +57,7 @@ import static uk.co.real_logic.artio.system_tests.SystemTestUtil.LIBRARY_LIMIT;
 
 public class TestSystem
 {
+    final ExecutorService executor = Executors.newSingleThreadExecutor();
     public static final long LONG_AWAIT_TIMEOUT_IN_MS = 600_000_000;
 
     private final List<FixLibrary> libraries;
@@ -80,15 +85,17 @@ public class TestSystem
         return this;
     }
 
-    public void poll()
+    public int poll()
     {
+        int resultInvokeFramer = 0;
         if (scheduler != null)
         {
-            scheduler.invokeFramer();
-            scheduler.invokeFramer();
+            resultInvokeFramer = scheduler.invokeFramer();
         }
-        libraries.forEach((library) -> library.poll(LIBRARY_LIMIT));
+        final int result = resultInvokeFramer + libraries.stream().mapToInt((library) ->
+            library.poll(LIBRARY_LIMIT)).sum();
         operations.forEach(Runnable::run);
+        return result;
     }
 
     public void addOperation(final Runnable operation)
@@ -169,8 +176,18 @@ public class TestSystem
             () ->
             {
                 poll();
-
-                return !reply.isExecuting();
+                final boolean result = reply.isExecuting();
+                if (reply.hasErrored())
+                {
+                    DebugLogger.log(LogTag.FIX_TEST,
+                        String.format("replay has errored state: [%s] error: [%s]", reply.state(), reply.error()));
+                }
+                if (reply.hasTimedOut())
+                {
+                    DebugLogger.log(LogTag.FIX_TEST,
+                        String.format("replay has timed out state: [%s] error: [%s]", reply.state(), reply.error()));
+                }
+                return !result;
             },
             DEFAULT_TIMEOUT_IN_MS,
             Exceptions::printStackTracesForAllThreads);
@@ -276,6 +293,35 @@ public class TestSystem
         return (T)value[0];
     }
 
+    public <T> T await(final Supplier<T> supplier)
+    {
+        final AtomicReference<T> aux = new AtomicReference<>(null);
+        assertEventuallyTrue(
+            "lambda returns null",
+            () ->
+            {
+                poll();
+                aux.set(supplier.get());
+                return aux.get() != null;
+            });
+        return aux.get();
+    }
+
+    public <T> T await(final String message, final Supplier<T> supplier)
+    {
+        final AtomicReference<T> aux = new AtomicReference<>(null);
+        assertEventuallyTrue(
+            message,
+            () ->
+            {
+                poll();
+                aux.set(supplier.get());
+                return aux.get() != null;
+            });
+        return aux.get();
+    }
+
+
     public void await(final String message, final BooleanSupplier predicate)
     {
         assertEventuallyTrue(
@@ -311,48 +357,42 @@ public class TestSystem
 
     public <T> T awaitBlocking(final Callable<T> operation)
     {
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final Future<T> future = executor.submit(operation);
+
+        final long deadlineInMs = System.currentTimeMillis() + awaitTimeoutInMs;
+
+        while (!future.isDone())
+        {
+            poll();
+
+            Thread.yield();
+
+            if (System.currentTimeMillis() > deadlineInMs)
+            {
+                Exceptions.printStackTracesForAllThreads();
+
+                throw new TimeoutException(String.format(" %s failed: timed out after [%s]ms",
+                    operation,
+                    awaitTimeoutInMs));
+            }
+        }
+
         try
         {
-            final Future<T> future = executor.submit(operation);
-
-            final long deadlineInMs = System.currentTimeMillis() + awaitTimeoutInMs;
-
-            while (!future.isDone())
-            {
-                poll();
-
-                Thread.yield();
-
-                if (System.currentTimeMillis() > deadlineInMs)
-                {
-                    Exceptions.printStackTracesForAllThreads();
-
-                    throw new TimeoutException(operation + " failed: timed out");
-                }
-            }
-
-            try
-            {
-                return future.get();
-            }
-            catch (final InterruptedException | ExecutionException e)
-            {
-                if (e.getCause() instanceof TimeoutException ||
-                    e.getCause() instanceof java.util.concurrent.TimeoutException)
-                {
-                    Exceptions.printStackTracesForAllThreads();
-                }
-
-                LangUtil.rethrowUnchecked(e);
-            }
-
-            return null;
+            return future.get();
         }
-        finally
+        catch (final InterruptedException | ExecutionException e)
         {
-            executor.shutdown();
+            if (e.getCause() instanceof TimeoutException ||
+                e.getCause() instanceof java.util.concurrent.TimeoutException)
+            {
+                Exceptions.printStackTracesForAllThreads();
+            }
+
+            LangUtil.rethrowUnchecked(e);
         }
+
+        return null;
     }
 
     public void awaitUnbind(final ILink3Connection session)

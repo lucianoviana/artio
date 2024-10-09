@@ -21,10 +21,13 @@ import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.OffsetEpochNanoClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
 import uk.co.real_logic.artio.Timing;
 import uk.co.real_logic.artio.builder.Encoder;
 import uk.co.real_logic.artio.builder.LogonEncoder;
@@ -63,6 +66,8 @@ import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 @RunWith(Parameterized.class)
 public class SlowConsumerTest
 {
+    @Rule
+    public Timeout globalTimeout = Timeout.millis(TEST_TIMEOUT_IN_MS);
     private static final int SIZE_OF_METADATA = 137;
 
     @Parameters(name = "metadata={0},fragmented={1}")
@@ -117,7 +122,7 @@ public class SlowConsumerTest
         testRequest = newTestRequest();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldQuarantineThenDisconnectASlowConsumer() throws IOException
     {
         final int senderMaxBytesInBuffer = 8 * 1024;
@@ -132,6 +137,7 @@ public class SlowConsumerTest
         while (!socketIsConnected())
         {
             testSystem.poll();
+            Thread.yield();
         }
 
         assertNotSlow();
@@ -148,10 +154,11 @@ public class SlowConsumerTest
                     hasBecomeSlow = true;
                 }
 
-                sendMessage();
+                sendMessageWithRetry();
             }
 
             testSystem.poll();
+            Thread.yield();
         }
 
         bytesInBufferAtLeast(sessionInfo, senderMaxBytesInBuffer);
@@ -161,6 +168,8 @@ public class SlowConsumerTest
         {
             sessionBecomesSlow();
         }
+
+        assertSessionDisconnected(testSystem, session);
     }
 
     private void sessionBecomesSlow()
@@ -168,25 +177,36 @@ public class SlowConsumerTest
         while (!handler.isSlow(session))
         {
             testSystem.poll();
+            Thread.yield();
         }
 
         assertTrue(session.isSlowConsumer());
     }
 
-    private void sendMessage()
+    private long sendMessageWithRetry()
+    {
+        return testSystem.awaitSend(this::sendMessage);
+    }
+
+    private long sendMessage()
+    {
+        return sendMessage(testRequest);
+    }
+
+    private long sendMessage(final Encoder encoder)
     {
         if (sendMetadata)
         {
             metadata.putInt(0, session.lastSentMsgSeqNum() + 1);
-            session.trySend(testRequest, metadata, 0);
+            return session.trySend(encoder, metadata, 0);
         }
         else
         {
-            session.trySend(testRequest);
+            return session.trySend(encoder);
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldRestoreConnectionFromSlowGroupWhenItCatchesUp() throws IOException
     {
         final MessageTimingCaptor messageTimingCaptor = new MessageTimingCaptor();
@@ -194,6 +214,7 @@ public class SlowConsumerTest
         socket.configureBlocking(false);
 
         testSystem.poll();
+        Thread.yield();
 
         // Get out of slow state
         while (sessionInfo.bytesInBuffer() > 0 || handler.isSlow(session))
@@ -206,9 +227,8 @@ public class SlowConsumerTest
             }
             while (bytesRead > 0);
 
-            sendMessage();
-
             testSystem.poll();
+            Thread.yield();
         }
 
         assertNotSlow();
@@ -227,7 +247,7 @@ public class SlowConsumerTest
         assertTrue(socketIsConnected());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldNotifyLibraryOfSlowConnectionWhenAcquired() throws IOException
     {
         sessionBecomesSlow(null);
@@ -236,10 +256,7 @@ public class SlowConsumerTest
 
         session = acquireSession(handler, library, session.id(), testSystem);
 
-        if (!handler.lastSessionWasSlow())
-        {
-            System.out.println(handler.sessions());
-        }
+        testSystem.await(handler::lastSessionWasSlow);
     }
 
     private ConnectedSessionInfo sessionBecomesSlow(final MessageTimingCaptor messageTimingCaptor) throws IOException
@@ -255,15 +272,15 @@ public class SlowConsumerTest
         assertNotSlow();
 
         // Get into a slow state
-        while (sessionInfo.bytesInBuffer() == 0 || !handler.isSlow(session))
+        while (!handler.isSlow(session))
         {
             for (int i = 0; i < 10; i++)
             {
-                sendMessage();
+                sendMessageWithRetry();
             }
-
-            testSystem.poll();
         }
+        testSystem.poll();
+        Thread.yield();
 
         assertIsSlow();
         return sessionInfo;
@@ -271,14 +288,14 @@ public class SlowConsumerTest
 
     private void assertIsSlow()
     {
-        assertTrue(handler.isSlow(session));
-        assertTrue(session.isSlowConsumer());
+        testSystem.await(() -> handler.isSlow(session));
+        testSystem.await(() -> session.isSlowConsumer());
     }
 
     private void assertNotSlow()
     {
-        assertFalse(handler.isSlow(session));
-        assertFalse(session.isSlowConsumer());
+        testSystem.await(() -> !handler.isSlow(session));
+        testSystem.await(() -> !session.isSlowConsumer());
     }
 
     private void bytesInBufferAtLeast(final ConnectedSessionInfo sessionInfo, final long bytesInBuffer)

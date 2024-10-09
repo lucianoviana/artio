@@ -15,18 +15,22 @@
  */
 package uk.co.real_logic.artio.system_tests;
 
-import io.aeron.logbuffer.ControlledFragmentHandler.Action;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static uk.co.real_logic.artio.system_tests.SystemTestUtil.ACCEPTOR_ID;
+import static uk.co.real_logic.artio.system_tests.SystemTestUtil.INITIATOR_ID;
+
 import org.agrona.concurrent.UnsafeBuffer;
+
+import io.aeron.logbuffer.ControlledFragmentHandler.Action;
 import uk.co.real_logic.artio.ExecType;
 import uk.co.real_logic.artio.OrdStatus;
 import uk.co.real_logic.artio.Pressure;
 import uk.co.real_logic.artio.Side;
 import uk.co.real_logic.artio.builder.ExecutionReportEncoder;
 import uk.co.real_logic.artio.builder.HeaderEncoder;
+import uk.co.real_logic.artio.builder.ResendRequestEncoder;
 import uk.co.real_logic.artio.fields.UtcTimestampEncoder;
 import uk.co.real_logic.artio.session.Session;
-
-import static java.nio.charset.StandardCharsets.US_ASCII;
 
 public class ReportFactory
 {
@@ -35,6 +39,7 @@ public class ReportFactory
     public static final String MSFT = "MSFT";
 
     private final ExecutionReportEncoder executionReport = new ExecutionReportEncoder();
+    private final ResendRequestEncoder resendRequestEncoder = new ResendRequestEncoder();
     private final byte[] encodeBuffer = new byte[SIZE_OF_ASCII_LONG];
     private final UnsafeBuffer encoder = new UnsafeBuffer(encodeBuffer);
     private final UtcTimestampEncoder timestamp = new UtcTimestampEncoder();
@@ -76,6 +81,21 @@ public class ReportFactory
     public static long sendOneReport(final TestSystem testSystem, final Session session, final Side side)
     {
         return new ReportFactory().sendReport(testSystem, session, side);
+    }
+
+    public ResendRequestEncoder setupResendRequest(final int begin, final int end)
+    {
+        resendRequestEncoder.reset();
+        resendRequestEncoder.header()
+          .sendingTime(timestamp.buffer())
+          .msgSeqNum(2)
+          .senderCompID(INITIATOR_ID)
+            .targetCompID(ACCEPTOR_ID);
+        timestamp.encode(System.currentTimeMillis());
+        resendRequestEncoder
+          .beginSeqNo(begin)
+            .endSeqNo(end);
+        return resendRequestEncoder;
     }
 
     public ExecutionReportEncoder setupReport(final Side side, final int execAndOrderId)

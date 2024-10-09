@@ -26,16 +26,20 @@ import uk.co.real_logic.artio.session.Session;
 import static org.junit.Assert.assertNotNull;
 import static uk.co.real_logic.artio.dictionary.SessionConstants.RESEND_REQUEST_MESSAGE_TYPE_CHARS;
 import static uk.co.real_logic.artio.fields.RejectReason.OTHER;
+import static uk.co.real_logic.artio.system_tests.SystemTestUtil.LOCK;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FakeResendRequestController implements ResendRequestController
 {
     public static final String CUSTOM_MESSAGE = "custom message";
-    private boolean resend = true;
+    private AtomicBoolean resend = new AtomicBoolean(true);
 
-    private int callCount = 0;
+    private AtomicInteger callCount = new AtomicInteger(0);
     private IntArrayList seenReplaysInFlight = new IntArrayList();
-    private boolean customResend = false;
-    private int maxResends = Integer.MAX_VALUE;
+    private AtomicBoolean customResend = new AtomicBoolean(false);
+    private AtomicInteger maxResends = new AtomicInteger(Integer.MAX_VALUE);
 
     public void onResend(
         final Session session,
@@ -43,19 +47,18 @@ public class FakeResendRequestController implements ResendRequestController
         final int correctedEndSeqNo,
         final ResendRequestResponse response)
     {
-        callCount++;
         assertNotNull(resendRequest);
 
-        if (callCount > maxResends)
+        if (callCount.incrementAndGet() > maxResends.get())
         {
-            resend = false;
+            resend.set(false);
         }
 
-        if (resend)
+        if (resend.get())
         {
             response.resend();
         }
-        else if (customResend)
+        else if (customResend.get())
         {
             final RejectEncoder rejectEncoder = new RejectEncoder();
             rejectEncoder.refTagID(Constants.BEGIN_SEQ_NO);
@@ -79,36 +82,44 @@ public class FakeResendRequestController implements ResendRequestController
 
     public void resend(final boolean resend)
     {
-        this.resend = resend;
+        this.resend.set(resend);
     }
 
     public void maxResends(final int maxResends)
     {
-        this.maxResends = maxResends;
+        this.maxResends.set(maxResends);
     }
 
     public boolean wasCalled()
     {
-        return callCount > 0;
+        return callCount.get() > 0;
     }
 
     public int callCount()
     {
-        return callCount;
+        return callCount.get();
     }
 
     public int completeCount()
     {
-        return seenReplaysInFlight.size();
+        synchronized (LOCK)
+        {
+
+            return seenReplaysInFlight.size();
+        }
     }
 
     public IntArrayList seenReplaysInFlight()
     {
-        return seenReplaysInFlight;
+        synchronized (LOCK)
+        {
+
+            return seenReplaysInFlight;
+        }
     }
 
     public void customResend(final boolean customResend)
     {
-        this.customResend = customResend;
+        this.customResend.set(customResend);
     }
 }

@@ -116,7 +116,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void sequenceNumbersCanPersistOverRestarts()
     {
         exchangeMessagesAroundARestart(AUTOMATIC_INITIAL_SEQUENCE_NUMBER, DEFAULT_SEQ_NUM_AFTER);
@@ -128,7 +128,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertSequenceResetBeforeLastLogon(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void previousMessagesAreReplayed()
     {
         onAcquireSession = this::requestReplayWhenReacquiringSession;
@@ -139,7 +139,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertLastLogonEquals(4, 0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldCopeWithCatchupReplayOfMissingMessages()
     {
         deleteAcceptorLogsDuringRestart();
@@ -163,7 +163,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         };
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldCopeWithResendRequestOfMissingMessages()
     {
         printErrorMessages = false;
@@ -209,16 +209,15 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertThat(newSeqNo, newSeqNoMatcher);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldCopeWithResendRequestOfMissingMessagesWithHighInitialSequenceNumberSet()
     {
         exchangeMessagesAroundARestart(
             HIGH_INITIAL_SEQUENCE_NUMBER,
             4,
             HIGH_INITIAL_SEQUENCE_NUMBER,
-            5);
-
-        receivesGapfill(acceptingOtfAcceptor, greaterThan(HIGH_INITIAL_SEQUENCE_NUMBER));
+            5,
+            greaterThan(HIGH_INITIAL_SEQUENCE_NUMBER));
 
         // Test that we don't accidentally send another resend request
         // Reproduction of reported bug
@@ -226,7 +225,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertEquals(1, initiatingOtfAcceptor.receivedMessage(RESEND_REQUEST_MESSAGE_AS_STR).count());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void messagesCanBeReplayedOverRestart()
     {
         exchangeMessagesAroundARestart(AUTOMATIC_INITIAL_SEQUENCE_NUMBER, DEFAULT_SEQ_NUM_AFTER);
@@ -253,7 +252,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         testSystem.send(initiatingSession, resendRequest);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void customInitialSequenceNumbersCanBeSet()
     {
         exchangeMessagesAroundARestart(4, DEFAULT_SEQ_NUM_AFTER);
@@ -265,7 +264,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertSequenceResetBeforeLastLogon(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void sessionsCanBeReset()
     {
         beforeReconnect = this::resetSessions;
@@ -280,7 +279,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertSequenceResetTimeAtLatestLogon(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void sequenceNumbersCanBeResetWhileSessionDisconnected()
     {
         beforeReconnect = this::resetSequenceNumbers;
@@ -294,7 +293,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertSequenceResetTimeAtLatestLogon(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void sequenceNumbersCanBeResetOnLogon()
     {
         resetSequenceNumbersOnLogon = true;
@@ -310,7 +309,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertSequenceResetTimeAtLatestLogon(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void sequenceNumbersCanBeResetOnLogonWithoutARestart()
     {
         launch(this::nothing);
@@ -349,7 +348,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertSequenceResetTimeAtLatestLogon(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldReceiveRelevantLogoutErrorTextDuringConnect()
     {
         onInitiateReply = reply ->
@@ -375,7 +374,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertEquals("MsgSeqNum too low, expecting 1 but received 0", lastMessage.get(Constants.TEXT));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldPersistSequenceNumbersWithoutARestart()
     {
         launch(this::nothing);
@@ -461,7 +460,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         replayCountChecker.assertBelowThreshold();
     }
 
-    @Test(timeout = 50_000)
+    @Test
     public void shouldDetectDisconnectDuringReplay()
     {
         printErrorMessages = false;
@@ -492,7 +491,8 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
 
             connectPersistingSessions();
 
-            assertFalse(acceptingSession.isReplaying());
+            testSystem.await(() -> !acceptingSession.isReplaying());
+            testSystem.await(() -> !initiatingSession.isReplaying());
             sendResendRequest(1, 0, initiatingOtfAcceptor, initiatingSession);
             testSystem.await("failed to start replaying", acceptingSession::isReplaying);
 
@@ -511,7 +511,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldRejectIncorrectInitiatorSequenceNumber()
     {
         printErrorMessages = false;
@@ -569,7 +569,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertEquals(ERRORED, reply.state());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldReadOldMetaDataOverPersistentConnectionReconnect()
     {
         launch(this::nothing);
@@ -585,7 +585,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         readMetaData(acceptingSession.id());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldStoreAndForwardMessagesSentWhilstOffline()
     {
         launch(this::nothing);
@@ -603,7 +603,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         receiveReplayFromOfflineSession(sessionId);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldStoreAndForwardMessagesSentWhilstInSessionStateTransition()
     {
         final ReportFactory reportFactory = new ReportFactory();
@@ -628,7 +628,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         receiveReplayFromOfflineSession(sessionId);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldStoreAndForwardMessagesSentWithNewOfflineSession()
     {
         launch(this::nothing);
@@ -640,7 +640,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         receiveReplayFromOfflineSession(sessionId);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldReleaseNewOfflineSession()
     {
         launch(this::nothing);
@@ -660,7 +660,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertConnected(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldStoreAndForwardMessagesSentWhilstOfflineWithFollowerSession()
     {
         printErrorMessages = false;
@@ -678,20 +678,20 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         logoutInitiatingSession();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldStoreAndForwardMessagesSentOfflineWithFollowerSessionAndSequenceReset()
     {
         shouldStoreAndForwardMessagesSentOfflineWithFollowerSessionAndSequenceReset(2, 1);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldStoreAndForwardMessagesSentOfflineWithFollowerSessionAndSequenceResetHighInitiator()
     {
         shouldStoreAndForwardMessagesSentOfflineWithFollowerSessionAndSequenceReset(10, 10);
     }
 
     // Reproduction of a client bug
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldStoreAndForwardMessagesWithSequenceReset2()
     {
         final int firstReportSeqNum = 2;
@@ -827,7 +827,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldNotRaceOfflineMessagesWithLogon()
     {
         launch(this::nothing);
@@ -848,7 +848,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         attemptSend.validate();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldSynchroniseOfflineSequenceNumbersWithFollowerSession()
     {
         launch(this::nothing);
@@ -911,7 +911,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertThrows(IllegalStateException.class, throwingRunnable);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldResetSequenceNumbersOfOfflineSessions()
     {
         printErrorMessages = false;
@@ -923,7 +923,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
             true);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldResetSequenceNumbersOfOfflineSessionsWithResetSequenceNumbers()
     {
         resetSomeSequenceNumbersOfOfflineSessions(
@@ -933,7 +933,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
             true);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldResetReceivedSequenceNumbersOfOfflineSessions()
     {
         resetSomeSequenceNumbersOfOfflineSessions(
@@ -989,7 +989,7 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         assertAcceptingSessionHasSequenceIndex(retry ? 2 : 1);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void followerSessionShouldReturnCurrentConnectionId()
     {
         launch(this::nothing);
@@ -1095,6 +1095,20 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         final int expectedInitToAccSeqNum,
         final int expectedAccToInitSeqNum)
     {
+        exchangeMessagesAroundARestart(initialSentSequenceNumber,
+            initialReceivedSequenceNumber,
+            expectedInitToAccSeqNum,
+            expectedAccToInitSeqNum,
+            null);
+    }
+
+    private void exchangeMessagesAroundARestart(
+        final int initialSentSequenceNumber,
+        final int initialReceivedSequenceNumber,
+        final int expectedInitToAccSeqNum,
+        final int expectedAccToInitSeqNum,
+        final Matcher<Integer> gapFillMatcher)
+    {
         launch(this::nothing);
         connectPersistingSessions(AUTOMATIC_INITIAL_SEQUENCE_NUMBER, resetSequenceNumbersOnLogon);
         assertLastLogonEquals(1, 0);
@@ -1132,6 +1146,16 @@ public class PersistentSequenceNumberGatewayToGatewaySystemTest extends Abstract
         if (expectedInitToAccSeqNum != DOES_NOT_MATTER)
         {
             assertSequenceFromInitToAcceptAt(expectedInitToAccSeqNum, expectedAccToInitSeqNum);
+        }
+
+        // this means a resend request will be sent by the acceptor
+        if (initialSentSequenceNumber > expectedAccToInitSeqNum)
+        {
+            assertReceivedResendRequest(testSystem, initiatingOtfAcceptor, expectedAccToInitSeqNum);
+        }
+        if (gapFillMatcher != null)
+        {
+            receivesGapfill(acceptingOtfAcceptor, gapFillMatcher);
         }
 
         assertTestRequestSentAndReceived(initiatingSession, testSystem, acceptingOtfAcceptor);

@@ -21,9 +21,15 @@ import org.agrona.ErrorHandler;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.OffsetEpochNanoClock;
 import org.junit.After;
+import org.junit.Rule;
+import org.junit.rules.Timeout;
+
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.MonitoringAgentFactory;
+import uk.co.real_logic.artio.builder.Decoder;
+import uk.co.real_logic.artio.decoder.HeartbeatDecoder;
 import uk.co.real_logic.artio.decoder.LogonDecoder;
+import uk.co.real_logic.artio.decoder.LogoutDecoder;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
 import uk.co.real_logic.artio.engine.FixEngine;
 import uk.co.real_logic.artio.engine.ReproductionMessageHandler;
@@ -39,6 +45,8 @@ import java.util.function.Function;
 
 import static io.aeron.CommonContext.IPC_CHANNEL;
 import static org.agrona.CloseHelper.close;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -46,12 +54,15 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static uk.co.real_logic.artio.TestFixtures.*;
 import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 import static uk.co.real_logic.artio.library.FixLibrary.NO_MESSAGE_REPLAY;
+import static uk.co.real_logic.artio.system_tests.AbstractGatewayToGatewaySystemTest.TEST_TIMEOUT_IN_MS;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 import static uk.co.real_logic.artio.validation.PersistenceLevel.PERSISTENT_SEQUENCE_NUMBERS;
 import static uk.co.real_logic.artio.validation.PersistenceLevel.TRANSIENT_SEQUENCE_NUMBERS;
 
 public class AbstractMessageBasedAcceptorSystemTest
 {
+    @Rule
+    public Timeout globalTimeout = Timeout.millis(TEST_TIMEOUT_IN_MS);
     public static final int TEST_THROTTLE_WINDOW_IN_MS = 300;
     public static final int THROTTLE_MSG_LIMIT = 3;
     public static final int RESET_THROTTLE_MSG_LIMIT = 5;
@@ -221,17 +232,43 @@ public class AbstractMessageBasedAcceptorSystemTest
         engine = FixEngine.launch(config);
     }
 
+    void awaitedMessage(final FixConnection connection, final Decoder decoder)
+    {
+        testSystem.await(() -> connection.readMessage(decoder));
+    }
+
     void awaitedLogon(final FixConnection connection)
     {
-        testSystem.awaitBlocking(() -> logon(connection));
+        awaitedLogon(connection, true);
     }
+
+    void awaitedLogon(final FixConnection connection, final boolean resetSeqNumFlag)
+    {
+        logon(connection, resetSeqNumFlag);
+    }
+
+    void readMessage(final FixConnection connection, final Decoder decoder)
+    {
+        connection.readMessage(decoder);
+    }
+
 
     void logon(final FixConnection connection)
     {
         connection.logon(true);
 
-        final LogonDecoder logon = connection.readLogon();
+        final LogonDecoder logon = testSystem.await(connection::readLogon);
         assertTrue(logon.resetSeqNumFlag());
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    LogonDecoder logon(final FixConnection connection, final boolean resetSeqNumFlag)
+    {
+        connection.logon(resetSeqNumFlag);
+
+        final LogonDecoder logon = testSystem.await(connection::readLogon);
+        assertEquals(resetSeqNumFlag, logon.resetSeqNumFlag());
+        return logon;
     }
 
     Session acquireSession()
@@ -247,6 +284,23 @@ public class AbstractMessageBasedAcceptorSystemTest
             handler, library, sessionId, testSystem, lastReceivedSequenceNumber, sequenceIndex);
         assertNotNull(session);
         return session;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    protected LogoutDecoder logoutAndAwaitReply(final FixConnection connection)
+    {
+        connection.logout();
+
+        final LogoutDecoder logout = testSystem.await(connection::readLogout);
+        assertFalse(logout.textAsString(), logout.hasText());
+
+        return logout;
+    }
+
+    protected HeartbeatDecoder exchangeTestRequestHeartbeat(final FixConnection connection, final String testReqID)
+    {
+        connection.sendTestRequest(testReqID);
+        return testSystem.await(() -> connection.readHeartbeat(testReqID));
     }
 
     @After

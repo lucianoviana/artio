@@ -31,6 +31,7 @@ import uk.co.real_logic.artio.*;
 import uk.co.real_logic.artio.builder.ExecutionReportEncoder;
 import uk.co.real_logic.artio.builder.HeaderEncoder;
 import uk.co.real_logic.artio.decoder.ExecutionReportDecoder;
+import uk.co.real_logic.artio.decoder.LogoutDecoder;
 import uk.co.real_logic.artio.decoder.NewOrderSingleDecoder;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
@@ -265,7 +266,7 @@ public class MessageBasedInitiatorSystemTest
 
             assertFalse(handler.hasDisconnected());
 
-            final Session session = handler.lastSession();
+            final Session session = testSystem.await(handler::lastSession);
             testSystem.awaitSend(session::logoutAndDisconnect);
 
             assertConnectionDisconnects(testSystem, connection);
@@ -301,12 +302,8 @@ public class MessageBasedInitiatorSystemTest
 
         try (FixConnection connection = acceptConnection())
         {
-            testSystem.awaitBlocking(() ->
-            {
-                connection.readLogon();
-                connection.logon(false);
-            });
-
+            testSystem.await(connection::readLogon);
+            connection.logon(false);
             testSystem.awaitCompletedReply(sessionReply);
         }
         assertSessionDisconnected(testSystem, sessionReply.resultIfPresent());
@@ -322,17 +319,14 @@ public class MessageBasedInitiatorSystemTest
         // The gateway thinks it's sent the second execution report and wants to send a third.
         try (FixConnection connection = acceptPersistentConnection(false, false))
         {
-            testSystem.awaitBlocking(() ->
-            {
-                connection.readLogon(4);
-                connection.msgSeqNum(4).logon(false);
-                connection.sendExecutionReport(5, false);
-                connection.readResendRequest(3, 0);
-                connection.sendExecutionReport(3, true);
-                connection.sendGapFill(4, 5);
-                connection.sendExecutionReport(5, true);
-                connection.sendExecutionReport(6, false);
-            });
+            testSystem.await(() -> connection.readLogon(4));
+            connection.msgSeqNum(4).logon(false);
+            connection.sendExecutionReport(5, false);
+            testSystem.await(() -> connection.readResendRequest(3, 0));
+            connection.sendExecutionReport(3, true);
+            connection.sendGapFill(4, 5);
+            connection.sendExecutionReport(5, true);
+            connection.sendExecutionReport(6, false);
 
             // Assert that we've received the resent messages in order - without the first execution report
             // which should be ignored
@@ -348,18 +342,15 @@ public class MessageBasedInitiatorSystemTest
         // The gateway thinks it's sent the second execution report and wants to send a third.
         try (FixConnection connection = acceptPersistentConnection(true, false))
         {
-            testSystem.awaitBlocking(() ->
-            {
-                connection.readLogon(4);
-                connection.msgSeqNum(4).logon(false);
-                connection.sendExecutionReport(5, false);
-                connection.readResendRequest(3, 4);
-                connection.sendExecutionReport(3, true);
-                connection.sendGapFill(4, 5);
-                connection.readResendRequest(5, 5);
-                connection.sendExecutionReport(5, true);
-                connection.sendExecutionReport(6, false);
-            });
+            testSystem.await(() -> connection.readLogon(4));
+            connection.msgSeqNum(4).logon(false);
+            connection.sendExecutionReport(5, false);
+            testSystem.await(() -> connection.readResendRequest(3, 4));
+            connection.sendExecutionReport(3, true);
+            connection.sendGapFill(4, 5);
+            testSystem.await(() -> connection.readResendRequest(5, 5));
+            connection.sendExecutionReport(5, true);
+            connection.sendExecutionReport(6, false);
             assertResendMessagesInOrder();
         }
     }
@@ -372,18 +363,15 @@ public class MessageBasedInitiatorSystemTest
         // The gateway thinks it's sent the second execution report and wants to send a third.
         try (FixConnection connection = acceptPersistentConnection(false, true))
         {
-            testSystem.awaitBlocking(() ->
-            {
-                connection.readLogon(4);
-                connection.msgSeqNum(4).logon(false);
-                connection.readResendRequest(3, 0);
-                connection.sendExecutionReport(5, false);
-                connection.readResendRequest(5, 0);
-                connection.sendExecutionReport(3, true);
-                connection.sendGapFill(4, 5);
-                connection.sendExecutionReport(5, true);
-                connection.sendExecutionReport(6, false);
-            });
+            testSystem.await(() -> connection.readLogon(4));
+            connection.msgSeqNum(4).logon(false);
+            testSystem.await(() -> connection.readResendRequest(3, 0));
+            connection.sendExecutionReport(5, false);
+            testSystem.await(() -> connection.readResendRequest(5, 0));
+            connection.sendExecutionReport(3, true);
+            connection.sendGapFill(4, 5);
+            connection.sendExecutionReport(5, true);
+            connection.sendExecutionReport(6, false);
             assertResendMessagesInOrder();
         }
     }
@@ -397,18 +385,15 @@ public class MessageBasedInitiatorSystemTest
         // The gateway thinks it's sent the second execution report and wants to send a third.
         try (FixConnection connection = acceptPersistentConnection(true, true))
         {
-            testSystem.awaitBlocking(() ->
-            {
-                connection.readLogon(4);
-                connection.msgSeqNum(4).logon(false);
-                connection.readResendRequest(3, 4);
-                connection.sendExecutionReport(5, false);
-                connection.readResendRequest(5, 5);
-                connection.sendExecutionReport(3, true);
-                connection.sendGapFill(4, 5);
-                connection.sendExecutionReport(5, true);
-                connection.sendExecutionReport(6, false);
-            });
+            testSystem.await(() -> connection.readLogon(4));
+            connection.msgSeqNum(4).logon(false);
+            testSystem.await(() -> connection.readResendRequest(3, 4));
+            connection.sendExecutionReport(5, false);
+            testSystem.await(() -> connection.readResendRequest(5, 5));
+            connection.sendExecutionReport(3, true);
+            connection.sendGapFill(4, 5);
+            connection.sendExecutionReport(5, true);
+            connection.sendExecutionReport(6, false);
             assertResendMessagesInOrder();
         }
     }
@@ -427,14 +412,12 @@ public class MessageBasedInitiatorSystemTest
             session = completeLogon();
             OrderFactory.sendOrder(session);
 
-            testSystem.awaitBlocking(() ->
-            {
-                connection.readOrder();
-                connection.sendExecutionReport(2, false);
-                connection.sendExecutionReport(3, false);
+            testSystem.await(connection::readOrder);
+            connection.sendExecutionReport(2, false);
+            connection.sendExecutionReport(3, false);
 
-                connection.msgSeqNum(4).logoutAndAwaitReply();
-            });
+            connection.msgSeqNum(4);
+            logoutAndAwaitReply(connection);
             assertEquals(4, session.lastReceivedMsgSeqNum());
             assertEquals(3, session.lastSentMsgSeqNum());
         }
@@ -444,16 +427,13 @@ public class MessageBasedInitiatorSystemTest
         // Low sequence number logon followed by a resend request
         try (FixConnection connection = acceptPersistentConnection(false, false))
         {
-            testSystem.awaitBlocking(() ->
-            {
-                connection.readLogon();
-                connection.logon(false);
-                connection.sendResendRequest(2, 2);
-                assertEquals(
-                    "MsgSeqNum too low, expecting 5 but received 1",
-                    connection.readLogout().textAsString());
-                assertFalse(connection.isConnected());
-            });
+            testSystem.await(connection::readLogon);
+            connection.logon(false);
+            connection.sendResendRequest(2, 2);
+            assertEquals(
+                "MsgSeqNum too low, expecting 5 but received 1",
+                testSystem.await(connection::readLogout).textAsString());
+            testSystem.await(() -> !connection.isConnected());
 
             // logon=4,logout=5, no more messages sent after logout
             assertEquals(5, session.lastSentMsgSeqNum());
@@ -482,7 +462,7 @@ public class MessageBasedInitiatorSystemTest
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
     public void shouldNotLeakCountersIfDisconnectedBeforeLogonCompleteInSoleLibraryMode() throws IOException
     {
         // Replicates a client issue, note that we only close the counters when we're
@@ -562,18 +542,15 @@ public class MessageBasedInitiatorSystemTest
         final Session session;
         try (FixConnection connection = acceptPersistentConnection(closedResendInterval, sendRedundantResendRequests))
         {
-            testSystem.awaitBlocking(() ->
-            {
-                connection.readLogon(1);
-                connection.logon(false);
-            });
+            testSystem.await(() -> connection.readLogon(1));
+            connection.logon(false);
             testSystem.awaitCompletedReply(sessionReply);
             session = sessionReply.resultIfPresent();
             OrderFactory.sendOrder(session);
-            connection.readOrder();
+            testSystem.await(connection::readOrder);
 
             OrderFactory.sendOrder(session);
-            final NewOrderSingleDecoder receivedOrder = connection.readOrder();
+            final NewOrderSingleDecoder receivedOrder = testSystem.await(connection::readOrder);
             assertEquals(3, receivedOrder.header().msgSeqNum());
 
             connection.sendExecutionReport(2, false);
@@ -601,8 +578,7 @@ public class MessageBasedInitiatorSystemTest
 
     private void sendLogonToAcceptor(final FixConnection connection)
     {
-        //noinspection Convert2MethodRef
-        testSystem.awaitBlocking(() -> connection.readLogon());
+        testSystem.await(() -> connection.readLogon());
     }
 
     @After
@@ -634,4 +610,15 @@ public class MessageBasedInitiatorSystemTest
 
         return FixConnection.accept(fixPort, () -> sessionReply = library.initiate(config));
     }
+
+    private LogoutDecoder logoutAndAwaitReply(final FixConnection connection)
+    {
+        connection.logout();
+
+        final LogoutDecoder logout = testSystem.await(connection::readLogout);
+        assertFalse(logout.textAsString(), logout.hasText());
+
+        return logout;
+    }
+
 }
