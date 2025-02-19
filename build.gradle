@@ -82,8 +82,6 @@ def projectPom = {
 ext {
     group = artioGroup
     isReleaseVersion = !version.endsWith("SNAPSHOT")
-    repoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-    snapshotUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
     iLink3Enabled = Boolean.getBoolean("fix.core.iLink3Enabled")
 
     if (!project.hasProperty('repoUsername')) {
@@ -92,6 +90,14 @@ ext {
 
     if (!project.hasProperty('repoPassword')) {
         repoPassword = ''
+    }
+
+    if (!project.hasProperty('repoUrl')) {
+        repoUrl = ''
+    }
+
+    if (!project.hasProperty('snapshotUrl')) {
+        snapshotUrl = ''
     }
 
     if (!project.hasProperty('signingKey')) {
