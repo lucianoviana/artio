@@ -96,6 +96,8 @@ class FixReceiverEndPoint extends ReceiverEndPoint
     } ipv4_addr; */
     private static final int PROXY_V2_TCP4_ADDR_SIZE = 4;
     private static final int PROXY_V2_TCP4_PORT_SIZE = 2;
+    private static final int PROXY_V2_TCP4_TOTAL_ADDR_LENGTH =
+        (PROXY_V2_TCP4_ADDR_SIZE * 2) + (PROXY_V2_TCP4_PORT_SIZE * 2);
 
     private static final int PROXY_V2_TCP4_SRC_ADDR_OFFSET = PROXY_V2_ADDRESS_OFFSET;
     private static final int PROXY_V2_TCP4_DST_ADDR_OFFSET = PROXY_V2_TCP4_SRC_ADDR_OFFSET + PROXY_V2_TCP4_ADDR_SIZE;
@@ -110,6 +112,8 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         } ipv6_addr; */
     private static final int PROXY_V2_TCP6_ADDR_SIZE = 16;
     private static final int PROXY_V2_TCP6_PORT_SIZE = 2;
+    private static final int PROXY_V2_TCP6_TOTAL_ADDR_LENGTH =
+        (PROXY_V2_TCP6_ADDR_SIZE * 2) + (PROXY_V2_TCP6_PORT_SIZE * 2);
     private static final int IPV6_DIGITS = 8;
     private static final int[] IPV6_LOCALHOST_DIGITS = {0, 0, 0, 0, 0, 0, 0, 1};
     private static final String IPV6_LOCALHOST = "::1:";
@@ -536,7 +540,7 @@ class FixReceiverEndPoint extends ReceiverEndPoint
 
             if (usedBufferData > PROXY_V2_MIN_LENGTH && checkSignature(buffer, PROXY_V2_SIG))
             {
-                return parseProxyV2(buffer);
+                return parseProxyV2(buffer, usedBufferData);
             }
             else if (usedBufferData > 8 && checkSignature(buffer, PROXY_V1_SIG))
             {
@@ -552,15 +556,29 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         return 0;
     }
 
-    private int parseProxyV2(final MutableAsciiBuffer buffer)
+    @SuppressWarnings("methodLength")
+    private int parseProxyV2(final MutableAsciiBuffer buffer, final int usedBufferData)
     {
         final byte verCmd = buffer.getByte(PROXY_V2_VER_CMD_OFFSET);
 
         if ((verCmd & 0xF0) != PROXY_V2_VER)
         {
-            // Bad protocol version
-            requiresProxyCheck = false;
-            return 0;
+            throw new RuntimeException("Invalid Proxy v2 protocol version: " + (verCmd & 0xF0));
+        }
+
+        final int proxyAdressLength = proxyV2BodyLength(buffer);
+        final int totalLength = PROXY_V2_ADDRESS_OFFSET + proxyAdressLength;
+        if (totalLength > buffer.capacity())
+        {
+            throw new RuntimeException("Proxy v2 address length exceeds buffer capacity, addressLength=" +
+                proxyAdressLength + ", buffer.capacity=" + buffer.capacity());
+        }
+
+        if (totalLength > usedBufferData)
+        {
+            //TODO: retry polling with timeout
+            throw new RuntimeException("Proxy v2 address length exceeds bytes read, addressLength=" +
+                proxyAdressLength + ", bytes read=" + usedBufferData);
         }
 
         switch (verCmd & 0xF)
@@ -573,6 +591,12 @@ class FixReceiverEndPoint extends ReceiverEndPoint
                 {
                     case PROXY_V2_FAMILY_TCP_4:
                     {
+                        if (proxyAdressLength < PROXY_V2_TCP4_TOTAL_ADDR_LENGTH)
+                        {
+                            throw new RuntimeException("Proxy v2 TCP over IPv4 requires minimum of 12 " +
+                                "address length but addressLength=" + proxyAdressLength);
+                        }
+
                         final int srcAddr = buffer.getInt(PROXY_V2_TCP4_SRC_ADDR_OFFSET, ByteOrder.BIG_ENDIAN);
                         final int srcPort = buffer.getChar(PROXY_V2_TCP4_SRC_PORT_OFFSET, ByteOrder.BIG_ENDIAN);
 
@@ -590,6 +614,12 @@ class FixReceiverEndPoint extends ReceiverEndPoint
 
                     case PROXY_V2_FAMILY_TCP_6:
                     {
+                        if (proxyAdressLength < PROXY_V2_TCP6_TOTAL_ADDR_LENGTH)
+                        {
+                            throw new RuntimeException("Proxy v2 TCP over IPv6 requires minimum of 36 " +
+                                "address length but addressLength=" + proxyAdressLength);
+                        }
+
                         final int[] digits = new int[IPV6_DIGITS];
                         for (int i = 0; i < IPV6_DIGITS; i++)
                         {
@@ -636,10 +666,9 @@ class FixReceiverEndPoint extends ReceiverEndPoint
             }
         }
 
-        final int endIndex = PROXY_V2_ADDRESS_OFFSET + proxyV2BodyLength(buffer);
-        logProxyV2(buffer, endIndex);
+        logProxyV2(buffer, totalLength);
         requiresProxyCheck = false;
-        return endIndex;
+        return totalLength;
     }
 
     private int parseProxyV1(final MutableAsciiBuffer buffer, final int usedBufferData)
@@ -681,9 +710,9 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         }
     }
 
-    private short proxyV2BodyLength(final MutableAsciiBuffer buffer)
+    private int proxyV2BodyLength(final MutableAsciiBuffer buffer)
     {
-        return buffer.getShort(PROXY_V2_BODY_LENGTH_OFFSET, ByteOrder.BIG_ENDIAN);
+        return buffer.getShort(PROXY_V2_BODY_LENGTH_OFFSET, ByteOrder.BIG_ENDIAN) & 0xFFFF;
     }
 
     private boolean checkSignature(final MutableAsciiBuffer buffer, final byte[] proxyV1Sig)
