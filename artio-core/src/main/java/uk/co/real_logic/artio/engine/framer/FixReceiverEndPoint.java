@@ -1012,7 +1012,7 @@ class FixReceiverEndPoint extends ReceiverEndPoint
         }
         catch (final IllegalArgumentException ex)
         {
-            return false;
+            return true;
         }
     }
 

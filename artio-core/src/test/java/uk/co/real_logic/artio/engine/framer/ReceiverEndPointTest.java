@@ -524,6 +524,22 @@ class ReceiverEndPointTest
         savesFramedMessages(1, OK, LOGON_LEN, LogonDecoder.MESSAGE_TYPE);
     }
 
+    @Test
+    void invalidTagExceptionInvalidatesMessage()
+    {
+        endpointBufferUpdatedWith(
+            (buffer) ->
+            {
+                buffer.put((byte)0x00).put(EG_MESSAGE);
+                return 1 + MSG_LEN;
+            });
+
+        assertEquals(1 + MSG_LEN, endPoint.poll());
+
+        pollWithNoData(0);
+        savesInvalidMessage(1 + MSG_LEN, times(1), INVALID, TIMESTAMP);
+    }
+
     private void firstSaveAttemptIsBackPressured()
     {
         when(publication
