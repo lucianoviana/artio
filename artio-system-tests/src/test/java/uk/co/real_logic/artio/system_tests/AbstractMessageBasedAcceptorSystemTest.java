@@ -253,6 +253,7 @@ public class AbstractMessageBasedAcceptorSystemTest
     {
         teardownArtio();
 
+
         cleanupMediaDriver(mediaDriver);
         verifyNoMoreInteractions(errorHandler);
     }
