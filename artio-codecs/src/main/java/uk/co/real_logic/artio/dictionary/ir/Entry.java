@@ -219,6 +219,11 @@ public final class Entry
             return this instanceof Field && ((Field)this).isEnum();
         }
 
+        default boolean isCharOrBooleanBasedField()
+        {
+            return this instanceof Field && ((Field)this).isCharOrBooleanBasedField();
+        }
+
         String name();
     }
 }

@@ -1406,6 +1406,56 @@ public abstract class AbstractDecoderGeneratorTest
     }
 
     @Test
+    public void decodesInvalidSizeBooleanValueWithNoValidation() throws Exception
+    {
+        final Decoder decoder = decodeHeartbeatWithoutValidation(INCORRECT_BOOLEAN_VALUE_MESSAGE);
+        assertEquals(true, getBooleanField(decoder));
+        assertArrayEquals(new char[]{'Y', 'Y'}, getChars(decoder, "booleanFieldAsChars"));
+
+        assertValid(decoder);
+    }
+
+    @Test
+    public void decodesInvalidSizeBooleanValue() throws Exception
+    {
+        final Decoder decoder = decodeHeartbeat(INCORRECT_BOOLEAN_VALUE_MESSAGE);
+        assertEquals(true, getBooleanField(decoder));
+        assertArrayEquals(new char[]{'Y', 'Y'}, getChars(decoder, "booleanFieldAsChars"));
+
+        assertInvalid(decoder, 5, 118);
+    }
+
+    @Test
+    public void decodesInvalidSizeNoEnumCharValue() throws Exception
+    {
+        final Decoder decoder = decodeHeartbeat(INCORRECT_SIZE_NO_ENUM_CHAR_VALUE_MESSAGE);
+        assertEquals('a', getChar(decoder, "charNoEnumField"));
+        assertArrayEquals(new char[]{'a', 'b'}, getChars(decoder, "charNoEnumFieldAsChars"));
+
+        assertInvalid(decoder, 5, 144);
+    }
+
+    @Test
+    public void decodesInvalidSizeCharValue() throws Exception
+    {
+        final Decoder decoder = decodeHeartbeat(INCORRECT_SIZE_CHAR_VALUE_MESSAGE);
+        assertEquals('a', getCharField(decoder));
+        assertArrayEquals(new char[]{'a', 'b'}, getChars(decoder, "charFieldAsChars"));
+
+        assertInvalid(decoder, 5, 128);
+    }
+
+    @Test
+    public void decodesInvalidCharValue() throws Exception
+    {
+        final Decoder decoder = decodeHeartbeat(INCORRECT_SIZE_2_CHAR_VALUE_MESSAGE);
+        assertEquals('z', getCharField(decoder));
+        assertArrayEquals(new char[]{'z'}, getChars(decoder, "charFieldAsChars"));
+
+        assertInvalid(decoder, 5, 128);
+    }
+
+    @Test
     public void doesNotValidateIfNoEnumValuesPresent() throws Exception
     {
         final Decoder decoder = decodeHeartbeat(MULTI_CHAR_VALUE_NO_ENUM_MESSAGE);
@@ -1685,6 +1735,11 @@ public abstract class AbstractDecoderGeneratorTest
     private char[] getMultiCharField(final Decoder decoder) throws Exception
     {
         return getChars(decoder, "multiCharField");
+    }
+
+    private char getCharField(final Decoder decoder) throws Exception
+    {
+        return getChar(decoder, "charField");
     }
 
     private char[] getMultiCharNoEnumField(final Decoder decoder) throws Exception
