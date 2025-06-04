@@ -1416,6 +1416,24 @@ public abstract class AbstractDecoderGeneratorTest
     }
 
     @Test
+    public void shouldNotRetainInvalidBooleanCharValueSizeAfterNewMessageParsed() throws Exception
+    {
+        final Decoder decoder = decodeHeartbeat(INCORRECT_BOOLEAN_VALUE_MESSAGE);
+        assertEquals(true, getBooleanField(decoder));
+        assertEquals(2, getInt(decoder, "booleanFieldLength"));
+
+        assertInvalid(decoder, 5, 118);
+
+        decoder.reset();
+
+        decode(ENCODED_MESSAGE, decoder);
+        assertEquals(true, getBooleanField(decoder));
+        assertEquals(1, getInt(decoder, "booleanFieldLength"));
+        assertValid(decoder);
+
+    }
+
+    @Test
     public void decodesInvalidSizeBooleanValue() throws Exception
     {
         final Decoder decoder = decodeHeartbeat(INCORRECT_BOOLEAN_VALUE_MESSAGE);
