@@ -1,6 +1,6 @@
 [versions]
 aeron = "1.48.0"
-agrona = "2.2.1"
+agrona = "2.2.2"
 byteBuddy = "1.17.5"
 checkstyle = "10.25.0"
 commons-codec = "1.15"
