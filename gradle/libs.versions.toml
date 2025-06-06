@@ -14,7 +14,6 @@ junit = "5.13.0"
 junit4 = "4.13.2"
 mockito = "5.18.0"
 plexus = "3.3.0"
-release =  "3.1.0"
 sbe = "1.35.1"
 shadow = "8.3.6"
 versions = "0.52.0"
@@ -40,6 +39,5 @@ plexus-utils = { group = "org.codehaus.plexus", name = "plexus-utils", version.r
 sbe = { group = "uk.co.real-logic", name = "sbe-tool", version.ref = "sbe" }
 
 [plugins]
-release = { id = "net.researchgate.release", version.ref = "release" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 versions = { id = "com.github.ben-manes.versions", version.ref = "versions" }
