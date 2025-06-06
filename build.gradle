@@ -127,14 +127,15 @@ allprojects {
     configurations.configureEach {
         resolutionStrategy {
             failOnVersionConflict()
+
             force libs.agrona,
-                  libs.byteBuddy,
-                  libs.byteBuddy.agent,
-                  // patching conflicting Checkstyle dependencies
-                  "org.codehaus.plexus:plexus-utils:3.3.0",
-                  "org.apache.commons:commons-lang3:3.8.1",
-                  "org.apache.httpcomponents:httpcore:4.4.14",
-                  "commons-codec:commons-codec:1.15"
+                    libs.byteBuddy,
+                    libs.byteBuddy.agent,
+                    // patching conflicting Checkstyle dependencies
+                    libs.commons.codec,
+                    libs.commons.lang3,
+                    libs.httpcore,
+                    libs.plexus.utils
         }
     }
 
@@ -171,7 +172,7 @@ subprojects {
     dependencies {
         testImplementation libs.hamcrest
         testImplementation libs.mockito
-        testImplementation platform("org.junit:junit-bom:${libs.versions.junit.get()}")
+        testImplementation platform(libs.junit.bom)
         testImplementation "org.junit.jupiter:junit-jupiter"
         testImplementation libs.junit4
         testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -966,10 +967,6 @@ tasks.withType(PublishToMavenRepository).configureEach {
     }
 }
 
-wrapper {
-    distributionType = 'ALL'
-}
-
 tasks.register('copyTestLogs', Copy) {
     from '.'
     include '**/build/test-output/**'
@@ -995,4 +992,8 @@ tasks.named('dependencyUpdates').configure {
     rejectVersionIf {
         isNonStable(it.candidate.version)
     }
+}
+
+wrapper {
+    distributionType = 'ALL'
 }
