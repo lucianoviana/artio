@@ -1,6 +1,6 @@
 [versions]
-aeron = "1.48.2"
-agrona = "2.2.2"
+aeron = "1.48.3"
+agrona = "2.2.3"
 byteBuddy = "1.17.5"
 checkstyle = "10.25.0"
 commons-codec = "1.15"
@@ -14,7 +14,7 @@ junit = "5.13.1"
 junit4 = "4.13.2"
 mockito = "5.18.0"
 plexus = "3.3.0"
-sbe = "1.35.4"
+sbe = "1.35.5"
 shadow = "8.3.6"
 versions = "0.52.0"
 
