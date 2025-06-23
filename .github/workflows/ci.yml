@@ -2,6 +2,8 @@ name: Continuous Integration
 
 on:
   workflow_call:
+  schedule:
+    - cron: '0 0 * * *'
   push:
     branches:
       - master
