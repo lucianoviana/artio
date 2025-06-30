@@ -105,10 +105,7 @@ public final class FixConnection implements AutoCloseable
             }
             ADMIN_IDLE_STRATEGY.reset();
 
-            return new FixConnection(
-              socket,
-              ACCEPTOR_ID,
-              INITIATOR_ID);
+            return new FixConnection(socket, ACCEPTOR_ID, INITIATOR_ID);
         }
     }
 
