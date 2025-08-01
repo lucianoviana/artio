@@ -57,6 +57,8 @@ public final class FixConnection implements AutoCloseable
 
     public static final String PROXY_V2_IPV6_SOURCE_IP = "fdaa:bbcc:ddee:0:5e8:349b:d23d:f168";
     public static final int PROXY_V2_IPV6_SOURCE_PORT = 44858;
+    public static final int CHECKSUM_LENGTH = 3;
+    public static final int TAG10_VALUE_OFFSET = 4;
 
     private final ByteBuffer writeBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
     private final MutableAsciiBuffer writeAsciiBuffer = new MutableAsciiBuffer(writeBuffer);
@@ -427,7 +429,9 @@ public final class FixConnection implements AutoCloseable
     private static int getEndOfTag10(final String ascii)
     {
         final int tag10Index = ascii.indexOf("\00110=");
-        return tag10Index == -1 ? -1 : ascii.indexOf("\001", tag10Index + 4) + 1;
+        return tag10Index == -1 || tag10Index + TAG10_VALUE_OFFSET + CHECKSUM_LENGTH > ascii.length() ?
+            -1 :
+            ascii.indexOf("\001", tag10Index + TAG10_VALUE_OFFSET) + 1;
     }
 
     int pollData() throws IOException
