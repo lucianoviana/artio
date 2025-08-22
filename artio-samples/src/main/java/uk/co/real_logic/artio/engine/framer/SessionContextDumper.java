@@ -31,7 +31,7 @@ public final class SessionContextDumper
     {
         final String fileName = args[0];
         final File bufferFile = new File(fileName);
-        final MappedFile mappedFile = MappedFile.map(bufferFile, (int)bufferFile.length());
+        final MappedFile mappedFile = MappedFile.map(bufferFile, bufferFile.length());
         final FixContexts contexts = new FixContexts(
             mappedFile,
             SessionIdStrategy.senderAndTarget(),

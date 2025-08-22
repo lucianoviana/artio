@@ -38,7 +38,7 @@ public class MappedFile implements AutoCloseable
     private FileChannel fileChannel;
     private AtomicBuffer buffer;
 
-    public static MappedFile map(final File bufferFile, final int size)
+    public static MappedFile map(final File bufferFile, final long size)
     {
         final FileChannel fileChannel;
         try
@@ -63,7 +63,7 @@ public class MappedFile implements AutoCloseable
         }
     }
 
-    public static MappedFile map(final String bufferPath, final int size)
+    public static MappedFile map(final String bufferPath, final long size)
     {
         return map(new File(bufferPath), size);
     }
