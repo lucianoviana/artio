@@ -141,8 +141,16 @@ public final class EngineProtocolSubscription implements ControlledFragmentHandl
         final SeqIndexSyncDecoder seqIndexSync = this.seqIndexSync;
         seqIndexSync.wrap(buffer, offset, blockLength, version);
 
+        final int libraryId = seqIndexSync.libraryId();
+        final Action action = handler.onApplicationHeartbeat(
+            libraryId, header.sessionId(), SeqIndexSyncDecoder.TEMPLATE_ID, 0);
+        if (action != null)
+        {
+            return action; // Continue processing messages, but not this message.
+        }
+
         return handler.onSeqIndexSync(
-            seqIndexSync.libraryId(),
+            libraryId,
             seqIndexSync.sessionId(),
             seqIndexSync.sequenceIndex());
     }
@@ -153,8 +161,16 @@ public final class EngineProtocolSubscription implements ControlledFragmentHandl
         final ThrottleConfigurationDecoder throttleConfiguration = this.throttleConfiguration;
         throttleConfiguration.wrap(buffer, offset, blockLength, version);
 
+        final int libraryId = throttleConfiguration.libraryId();
+        final Action action = handler.onApplicationHeartbeat(
+            libraryId, header.sessionId(), ThrottleConfigurationDecoder.TEMPLATE_ID, 0);
+        if (action != null)
+        {
+            return action; // Continue processing messages, but not this message.
+        }
+
         return handler.onThrottleConfiguration(
-            throttleConfiguration.libraryId(),
+            libraryId,
             throttleConfiguration.correlationId(),
             throttleConfiguration.session(),
             throttleConfiguration.throttleWindowInMs(),
