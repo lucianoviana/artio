@@ -2020,7 +2020,7 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         final LiveLibraryInfo libraryInfo = idToLibrary.get(libraryId);
         if (libraryInfo == null)
         {
-            return saveReleaseSessionReply(correlationId, SessionReplyStatus.UNKNOWN_LIBRARY);
+            return saveReleaseSessionReply(libraryId, correlationId, SessionReplyStatus.UNKNOWN_LIBRARY);
         }
 
         DebugLogger.log(
@@ -2034,10 +2034,10 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
 
         if (session == null)
         {
-            return saveReleaseSessionReply(correlationId, SessionReplyStatus.UNKNOWN_SESSION);
+            return saveReleaseSessionReply(libraryId, correlationId, SessionReplyStatus.UNKNOWN_SESSION);
         }
 
-        final Action action = Pressure.apply(inboundPublication.saveReleaseSessionReply(OK, correlationId));
+        final Action action = Pressure.apply(inboundPublication.saveReleaseSessionReply(libraryId, OK, correlationId));
         if (action == ABORT)
         {
             libraryInfo.addSession(session);
@@ -2064,12 +2064,15 @@ class Framer implements Agent, EngineEndPointHandler, ProtocolHandler
         return action;
     }
 
-    private Action saveReleaseSessionReply(final long correlationId, final SessionReplyStatus unknownLibrary)
+    private Action saveReleaseSessionReply(
+        final int libraryId,
+        final long correlationId,
+        final SessionReplyStatus unknownLibrary)
     {
-        final long position = inboundPublication.saveReleaseSessionReply(unknownLibrary, correlationId);
+        final long position = inboundPublication.saveReleaseSessionReply(libraryId, unknownLibrary, correlationId);
         if (Pressure.isBackPressured(position))
         {
-            schedule(() -> inboundPublication.saveReleaseSessionReply(unknownLibrary, correlationId));
+            schedule(() -> inboundPublication.saveReleaseSessionReply(libraryId, unknownLibrary, correlationId));
         }
 
         return CONTINUE;

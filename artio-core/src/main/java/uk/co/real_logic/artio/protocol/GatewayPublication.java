@@ -890,7 +890,7 @@ public class GatewayPublication extends ClaimablePublication
         return awaitingResend ? AwaitingResend.YES : AwaitingResend.NO;
     }
 
-    public long saveReleaseSessionReply(final SessionReplyStatus status, final long replyToId)
+    public long saveReleaseSessionReply(final int libraryId, final SessionReplyStatus status, final long replyToId)
     {
         final long position = claim(RELEASE_SESSION_REPLY_LENGTH);
         if (position < 0)
@@ -901,7 +901,10 @@ public class GatewayPublication extends ClaimablePublication
         final MutableDirectBuffer buffer = bufferClaim.buffer();
         final int offset = bufferClaim.offset();
 
-        releaseSessionReply.wrapAndApplyHeader(buffer, offset, header).replyToId(replyToId).status(status);
+        releaseSessionReply.wrapAndApplyHeader(buffer, offset, header)
+            .libraryId(libraryId)
+            .replyToId(replyToId)
+            .status(status);
 
         bufferClaim.commit();
 
