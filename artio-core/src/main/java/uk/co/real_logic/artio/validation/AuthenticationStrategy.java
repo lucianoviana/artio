@@ -50,7 +50,7 @@ public interface AuthenticationStrategy
      *              message and is safe to use within your own code without copying.
      * @param authProxy the proxy to notify when you're ready to authenticate.
      */
-    default void authenticateAsync(AbstractLogonDecoder logon, AuthenticationProxy authProxy)
+    default void authenticateAsync(final AbstractLogonDecoder logon, final AuthenticationProxy authProxy)
     {
         if (authenticate(logon))
         {
