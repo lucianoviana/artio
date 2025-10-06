@@ -26,7 +26,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MessageTimingCaptor implements MessageTimingHandler
 {
@@ -67,7 +67,7 @@ public class MessageTimingCaptor implements MessageTimingHandler
             final long expectedSequenceNumber = i + 1L;
             if (expectedSequenceNumber != sequenceNumber)
             {
-                assertEquals(sequenceNumbers.toString(), expectedSequenceNumber, sequenceNumber);
+                assertEquals(expectedSequenceNumber, sequenceNumber, sequenceNumbers.toString());
             }
         }
     }
@@ -81,7 +81,7 @@ public class MessageTimingCaptor implements MessageTimingHandler
             if (buffer.capacity() > 0)
             {
                 final long sequenceNumber = buffer.getInt(0);
-                assertEquals(Arrays.toString(buffer.byteArray()), i + 1L, sequenceNumber);
+                assertEquals(i + 1L, sequenceNumber, Arrays.toString(buffer.byteArray()));
             }
         }
     }

@@ -22,8 +22,8 @@ import org.agrona.ErrorHandler;
 import org.agrona.LangUtil;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.status.AtomicCounter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.mockito.verification.VerificationMode;
@@ -36,7 +36,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_SLOW_CONSUMER_TIMEOUT_IN_MS;
 import static uk.co.real_logic.artio.engine.framer.FixSenderEndPoint.*;
@@ -90,7 +90,7 @@ public class FixSenderEndPointTest
         receiverEndPoint,
         new FixSenderEndPoint.Formatters());
 
-    @Before
+    @BeforeEach
     public void setup()
     {
         when(inboundPublication.tryClaim(anyInt(), any())).then(invocation ->
@@ -317,12 +317,12 @@ public class FixSenderEndPointTest
 
     private void assertReplaying()
     {
-        assertTrue("not isReplaying", endPoint.isReplaying());
+        assertTrue(endPoint.isReplaying(), "not isReplaying");
     }
 
     private void assertNotReplaying()
     {
-        assertFalse("isReplaying", endPoint.isReplaying());
+        assertFalse(endPoint.isReplaying(), "isReplaying");
     }
 
     @Test
@@ -412,12 +412,12 @@ public class FixSenderEndPointTest
 
     private void assertRequiresReattempting()
     {
-        assertTrue("not requiresReattempting", endPoint.requiresRetry());
+        assertTrue(endPoint.requiresRetry(), "not requiresReattempting");
     }
 
     private void assertDoesNotRequireReattempting()
     {
-        assertFalse("requiresReattempting", endPoint.requiresRetry());
+        assertFalse(endPoint.requiresRetry(), "requiresReattempting");
     }
 
     private void becomeSlowConsumer()

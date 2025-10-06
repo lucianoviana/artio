@@ -20,10 +20,12 @@ import io.aeron.logbuffer.ControlledFragmentHandler.Action;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.fixp.FixPMessageDissector;
 import uk.co.real_logic.artio.fixp.SimpleOpenFramingHeader;
 import uk.co.real_logic.artio.ilink.ILink3Connection;
@@ -40,7 +42,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.fixp.SimpleOpenFramingHeader.SOFH_LENGTH;
 import static uk.co.real_logic.artio.ilink.ILink3Connection.NOT_AWAITING_RETRANSMIT;
@@ -75,7 +77,7 @@ public class RetransmitQueueTest
     private InternalILink3Connection connection;
     private int expectedRetransmitQueueSize = 0;
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         final ILink3ConnectionConfiguration config = new ILink3ConnectionConfiguration.Builder()
@@ -108,7 +110,7 @@ public class RetransmitQueueTest
             mock(FixPMessageDissector.class));
     }
 
-    @After
+    @AfterEach
     public void done()
     {
         assertEquals(expectedRetransmitQueueSize, connection.retransmitQueueSize());
@@ -233,7 +235,7 @@ public class RetransmitQueueTest
         assertSeqNos(2512, NOT_AWAITING_RETRANSMIT);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void shouldNotifyWhenTimeoutBreached()
     {

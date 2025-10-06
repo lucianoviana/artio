@@ -17,8 +17,10 @@ package uk.co.real_logic.artio.system_tests;
 
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.MonitoringAgentFactory;
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.builder.TestRequestEncoder;
@@ -33,7 +35,7 @@ import java.util.concurrent.locks.LockSupport;
 import static org.agrona.BitUtil.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.TestFixtures.largeTestReqId;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.Timing.assertEventuallyTrue;
@@ -44,7 +46,7 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
     private static final int UPDATE_OFFSET = 1;
     private static final short UPDATE_VALUE = 128;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         mediaDriver = launchMediaDriver();
@@ -66,7 +68,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         acceptingLibrary = testSystem.connect(acceptingLibraryConfig(acceptingHandler, nanoClock));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReadWrittenSessionMetaData()
     {
         connectSessions();
@@ -79,7 +82,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(META_DATA_VALUE, readBuffer.getInt(0));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReadWrittenSessionMetaDataForFollowerSession()
     {
         createFollowerSession(TEST_REPLY_TIMEOUT_IN_MS);
@@ -92,7 +96,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(META_DATA_VALUE, readBuffer.getInt(0));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReadWrittenSessionMetaDataForFollowerSessionAfterRestart()
     {
         createFollowerSession(TEST_REPLY_TIMEOUT_IN_MS);
@@ -110,7 +115,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(META_DATA_VALUE, readBuffer.getInt(0));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReadWrittenSessionSendMetaData()
     {
         connectSessions();
@@ -165,7 +171,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertReceivedSingleHeartbeat(testSystem, acceptingOtfAcceptor, testReqID);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveSessionMetaDataWhenSessionAcquired()
     {
         connectSessions();
@@ -180,7 +187,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(SIZE_OF_INT, readBuffer.capacity());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotReceiveSessionMetaDataWhenSessionAcquiredWithNoMetaData()
     {
         connectSessions();
@@ -191,7 +199,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(0, readBuffer.capacity());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldUpdateWrittenSessionMetaDataFittingWithinSlot()
     {
         connectSessions();
@@ -216,7 +225,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(writeBuffer, readBuffer);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldUpdateWrittenSessionMetaDataTooBigForOldSlot()
     {
         connectSessions();
@@ -245,7 +255,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(aggregatedBuffer, readBuffer);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveReadErrorForUnwrittenSessionMetaData()
     {
         connectSessions();
@@ -253,7 +264,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertNoMetaData();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveReadErrorForMetaDataWithUnknownSession()
     {
         connectSessions();
@@ -261,7 +273,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertUnknownSessionMetaData(META_DATA_WRONG_SESSION_ID);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveWriteErrorForMetaDataWithUnknownSession()
     {
         connectSessions();
@@ -271,7 +284,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(MetaDataStatus.UNKNOWN_SESSION, reply.resultIfPresent());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldResetMetaDataWhenSequenceNumberResetsWithLogon()
     {
         connectSessions();
@@ -287,7 +301,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         assertNoMetaData();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldResetMetaDataWhenSequenceNumberResetsWhenSessionIdExplicitlyReset()
     {
         connectSessions();
@@ -302,7 +317,8 @@ public class MetaDataTest extends AbstractGatewayToGatewaySystemTest
         acceptingSession = null;
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldResetMetaDataWhenSequenceNumberResetsWithExplicitResetSessionIds()
     {
         connectSessions();

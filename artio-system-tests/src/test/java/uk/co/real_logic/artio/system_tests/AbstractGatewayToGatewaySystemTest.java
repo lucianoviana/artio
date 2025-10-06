@@ -24,7 +24,9 @@ import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.OffsetEpochNanoClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.hamcrest.Matcher;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
+
+
 import uk.co.real_logic.artio.*;
 import uk.co.real_logic.artio.Reply.State;
 import uk.co.real_logic.artio.builder.HeaderEncoder;
@@ -51,11 +53,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.agrona.BitUtil.SIZE_OF_INT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.Constants.*;
 import static uk.co.real_logic.artio.FixMatchers.*;
 import static uk.co.real_logic.artio.GatewayProcess.NO_CONNECTION_ID;
@@ -137,7 +138,7 @@ public class AbstractGatewayToGatewaySystemTest
         connectSessions();
     }
 
-    @After
+    @AfterEach
     public void close()
     {
         TestHelper.clearPollStatus(initiatingLibrary);
@@ -276,7 +277,7 @@ public class AbstractGatewayToGatewaySystemTest
         acceptingSession = acquireSession(acceptingHandler, acceptingLibrary, sessionId, testSystem);
         assertEquals(initiatorId, acceptingHandler.lastInitiatorCompId());
         assertEquals(ACCEPTOR_ID, acceptingHandler.lastAcceptorCompId());
-        assertNotNull("unable to acquire accepting session", acceptingSession);
+        assertNotNull(acceptingSession, "unable to acquire accepting session");
     }
 
     void connectSessions()
@@ -308,7 +309,7 @@ public class AbstractGatewayToGatewaySystemTest
     void completeFailedSession(final Reply<Session> reply)
     {
         testSystem.awaitReply(reply);
-        assertEquals(reply.toString(), State.ERRORED, reply.state());
+        assertEquals(State.ERRORED, reply.state(), reply.toString());
     }
 
     FixMessage assertMessageResent(final int sequenceNumber, final String msgType, final boolean isGapFill)
@@ -332,8 +333,8 @@ public class AbstractGatewayToGatewaySystemTest
                 assertEquals("Y", message.possDup());
                 assertEquals(String.valueOf(sequenceNumber), message.get(MSG_SEQ_NUM));
                 assertEquals(INITIATOR_ID, message.get(Constants.SENDER_COMP_ID));
-                assertNull("Detected Error", acceptingOtfAcceptor.lastError());
-                assertTrue("Failed to complete parsing", acceptingOtfAcceptor.isCompleted());
+                assertNull(acceptingOtfAcceptor.lastError(), "Detected Error");
+                assertTrue(acceptingOtfAcceptor.isCompleted(), "Failed to complete parsing");
             });
 
         return acceptingOtfAcceptor.lastReceivedMessage();
@@ -444,7 +445,7 @@ public class AbstractGatewayToGatewaySystemTest
     {
         for (final SessionInfo sessionInfo : engine.allSessions())
         {
-            assertEquals(sessionInfo.toString(), sequenceIndex, sessionInfo.sequenceIndex());
+            assertEquals(sequenceIndex, sessionInfo.sequenceIndex(), sessionInfo.toString());
         }
     }
 
@@ -511,7 +512,7 @@ public class AbstractGatewayToGatewaySystemTest
             m.get(MSG_SEQ_NUM).equals(expectedSeqNum))
             .count();
 
-        assertEquals("Expected a single test request" + messages.toString(), 1, messageCount);
+        assertEquals(1, messageCount, "Expected a single test request" + messages.toString());
 
         messagesCanBeExchanged(otherSession, otherAcceptor);
     }
@@ -596,8 +597,7 @@ public class AbstractGatewayToGatewaySystemTest
         final long lastLogonTime = session.lastLogonTimeInNs();
         final long lastSequenceResetTime = session.lastSequenceResetTimeInNs();
         connectTimeRange.assertWithinRange(lastLogonTime);
-        assertEquals("lastSequenceResetTime was not the same as lastLogonTime",
-            lastLogonTime, lastSequenceResetTime);
+        assertEquals(lastLogonTime, lastSequenceResetTime, "lastSequenceResetTime was not the same as lastLogonTime");
     }
 
     List<String> getMessagesFromArchive(final EngineConfiguration configuration, final int queryStreamId)
@@ -744,9 +744,9 @@ public class AbstractGatewayToGatewaySystemTest
     void assertSeqNum(
         final int lastReceivedMsgSeqNum, final int lastSentMsgSeqNum, final int sequenceIndex, final Session session)
     {
-        assertEquals("incorrect lastReceivedMsgSeqNum", lastReceivedMsgSeqNum, session.lastReceivedMsgSeqNum());
-        assertEquals("incorrect lastSentMsgSeqNum", lastSentMsgSeqNum, session.lastSentMsgSeqNum());
-        assertEquals("incorrect sequenceIndex", sequenceIndex, session.sequenceIndex());
+        assertEquals(lastReceivedMsgSeqNum, session.lastReceivedMsgSeqNum(), "incorrect lastReceivedMsgSeqNum");
+        assertEquals(lastSentMsgSeqNum, session.lastSentMsgSeqNum(), "incorrect lastSentMsgSeqNum");
+        assertEquals(sequenceIndex, session.sequenceIndex(), "incorrect sequenceIndex");
     }
 
     void acceptingEngineHasSessionAndLibraryIsNotified()

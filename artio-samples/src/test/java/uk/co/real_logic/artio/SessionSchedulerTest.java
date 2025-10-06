@@ -1,8 +1,8 @@
 package uk.co.real_logic.artio;
 
 import org.agrona.ErrorHandler;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.verification.VerificationMode;
 import uk.co.real_logic.artio.library.FixLibrary;
 import uk.co.real_logic.artio.library.SessionConfiguration;
@@ -14,8 +14,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static io.aeron.Publication.BACK_PRESSURED;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class SessionSchedulerTest
@@ -32,7 +32,7 @@ public class SessionSchedulerTest
 
     private SessionScheduler sessionScheduler;
 
-    @Before
+    @BeforeEach
     public void setup()
     {
         SessionScheduler.timeEventPool = timeEventPool;
@@ -57,7 +57,7 @@ public class SessionSchedulerTest
 
         sessionScheduler = newSessionScheduler(LocalTime.of(9, 30));
         verifyNoTimeEvent();
-        assertTrue("not during day", sessionScheduler.duringDay());
+        assertTrue(sessionScheduler.duringDay(), "not during day");
 
         sessionScheduler = newSessionScheduler(LocalTime.of(17, 30));
         verifyNoTimeEvent();
@@ -216,7 +216,7 @@ public class SessionSchedulerTest
 
     private void assertNotDuringDay()
     {
-        assertFalse("during day", sessionScheduler.duringDay());
+        assertFalse(sessionScheduler.duringDay(), "during day");
     }
 
     private void verifyTimeEvent(final long delayInMilliseconds)

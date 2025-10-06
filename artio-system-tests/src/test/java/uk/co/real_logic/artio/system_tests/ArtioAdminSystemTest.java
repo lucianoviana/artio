@@ -17,9 +17,13 @@ package uk.co.real_logic.artio.system_tests;
 
 import io.aeron.exceptions.TimeoutException;
 import org.agrona.CloseHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.FixGatewayException;
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.admin.ArtioAdmin;
@@ -35,7 +39,7 @@ import java.util.List;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 import static uk.co.real_logic.artio.system_tests.TestSystem.LONG_AWAIT_TIMEOUT_IN_MS;
@@ -45,7 +49,7 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
 {
     private ArtioAdmin artioAdmin;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         mediaDriver = launchMediaDriver();
@@ -62,13 +66,14 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
         testSystem = new TestSystem(acceptingLibrary, initiatingLibrary);
     }
 
-    @After
+    @AfterEach
     public void teardown()
     {
         CloseHelper.close(artioAdmin);
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldQuerySessionStatus()
     {
         connectSessions();
@@ -89,11 +94,12 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
             assertTrue(artioAdmin.isClosed());
 
             artioAdmin.close();
-            assertTrue("Close not idempotent", artioAdmin.isClosed());
+            assertTrue(artioAdmin.isClosed(), "Close not idempotent");
         });
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldQueryMultipleSessions()
     {
         connectSessions();
@@ -142,7 +148,8 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
         });
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldDisconnectSession()
     {
         connectSessions();
@@ -159,7 +166,8 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
         assertSessionsDisconnected();
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldThrowWhenAttemptingToDisconnectUnknownSession()
     {
         testSystem.awaitLongBlocking(() ->
@@ -173,7 +181,8 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
         });
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldThrowWhenAttemptingToDisconnectOfflineSession()
     {
         createOfflineSession();
@@ -189,7 +198,8 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
         });
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldResetSequenceNumbersOfGatewayManagedSession()
     {
         connectSessions();
@@ -208,7 +218,8 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
         messagesCanBeExchanged();
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldResetSequenceNumbersOfLibraryManagedSession()
     {
         connectSessions();
@@ -230,7 +241,8 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
         messagesCanBeExchanged();
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldResetSequenceNumbersOfOfflineSession()
     {
         createOfflineSession();
@@ -251,7 +263,8 @@ public class ArtioAdminSystemTest extends AbstractGatewayToGatewaySystemTest
         });
     }
 
-    @Test(timeout = LONG_AWAIT_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(LONG_AWAIT_TIMEOUT_IN_MS)
     public void shouldThrowWhenAttemptingToResetSequenceNumbersOfUnknownSession()
     {
         testSystem.awaitLongBlocking(() ->

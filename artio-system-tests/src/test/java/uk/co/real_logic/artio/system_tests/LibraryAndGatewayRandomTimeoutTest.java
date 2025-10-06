@@ -19,9 +19,11 @@ import io.aeron.archive.ArchivingMediaDriver;
 import org.agrona.IoUtil;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.OffsetEpochNanoClock;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.FixGatewayException;
 import uk.co.real_logic.artio.MonitoringAgentFactory;
 import uk.co.real_logic.artio.Reply;
@@ -36,8 +38,8 @@ import java.io.File;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.co.real_logic.artio.Reply.State.ERRORED;
 import static uk.co.real_logic.artio.Reply.State.TIMED_OUT;
 import static uk.co.real_logic.artio.TestFixtures.*;
@@ -56,13 +58,13 @@ public class LibraryAndGatewayRandomTimeoutTest
     private final FakeOtfAcceptor initiatingOtfAcceptor = new FakeOtfAcceptor();
     private final FakeHandler initiatingSessionHandler = new FakeHandler(initiatingOtfAcceptor);
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         mediaDriver = launchMediaDriver();
     }
 
-    @After
+    @AfterEach
     public void close()
     {
         closeAll(initiatingLibrary, initiatingEngine);
@@ -75,7 +77,7 @@ public class LibraryAndGatewayRandomTimeoutTest
         launchEngine();
         launchLibrary();
 
-        assertTrue("Library not connected", initiatingLibrary.isConnected());
+        assertTrue(initiatingLibrary.isConnected(), "Library not connected");
 
         initiateResultsInError();
     }

@@ -19,12 +19,13 @@ import b3.entrypoint.fixp.sbe.*;
 import b3.entrypoint.fixp.sbe.Boolean;
 import org.agrona.BitUtil;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import uk.co.real_logic.artio.fixp.FixPRejectRefIdExtractor;
 import uk.co.real_logic.sbe.ir.Ir;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.co.real_logic.artio.binary_entrypoint.BinaryEntryPointProxy.BINARY_ENTRYPOINT_HEADER_LENGTH;
 import static uk.co.real_logic.artio.fixp.SimpleOpenFramingHeader.SOFH_LENGTH;
 import static uk.co.real_logic.artio.fixp.SimpleOpenFramingHeader.writeBinaryEntryPointSofh;

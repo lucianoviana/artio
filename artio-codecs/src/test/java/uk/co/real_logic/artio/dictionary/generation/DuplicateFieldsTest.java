@@ -15,13 +15,13 @@
  */
 package uk.co.real_logic.artio.dictionary.generation;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.builder.Decoder;
 import uk.co.real_logic.artio.builder.Encoder;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.dictionary.generation.CodecGenerationWrapper.dictionaryStream;
 import static uk.co.real_logic.artio.dictionary.generation.CodecGenerationWrapper.setupHeader;
 import static uk.co.real_logic.artio.util.Reflection.*;
@@ -56,7 +56,7 @@ public class DuplicateFieldsTest
     private Encoder encoder;
     private Decoder decoder;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception
     {
         WRAPPER.generate(config ->
@@ -70,7 +70,7 @@ public class DuplicateFieldsTest
         withGroupDecoder = WRAPPER.decoder("DuplicatedFieldMessage");
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception
     {
         encoder = (Encoder)withGroupEncoder.getDeclaredConstructor().newInstance();

@@ -34,9 +34,13 @@ import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.NoOpIdleStrategy;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.YieldingIdleStrategy;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.TestFixtures;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
@@ -49,7 +53,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 import static io.aeron.Aeron.NULL_VALUE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static uk.co.real_logic.artio.LogTag.REPLAY;
@@ -130,7 +134,7 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
     private int endChangeReadCount;
     private int lappedCount;
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         mediaDriver = TestFixtures.launchMediaDriver();
@@ -164,14 +168,15 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
             INDEX_SEGMENT_CAPACITY);
     }
 
-    @After
+    @AfterEach
     public void teardown()
     {
         Exceptions.closeAll(query, replayIndex, aeronArchive);
         cleanupMediaDriver(mediaDriver);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void testQueryingAtEveryRingBufferPositionBeforeAndAfterWrapping()
     {
         final LongArrayList positions = new LongArrayList();
@@ -240,7 +245,8 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
         verifyMessagesRead(INDEX_CAPACITY);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void testLappingQueryStartedBeforeWrapping()
     {
         for (int i = 0; i < INDEX_CAPACITY - 1; i++)
@@ -267,7 +273,8 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
         verifyMessagesRead((INDEX_CAPACITY - 2) * 2);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void testLappingQueryStartedAfterWrapping()
     {
         for (int i = 0; i < INDEX_CAPACITY; i++)
@@ -293,7 +300,8 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
         verifyMessagesRead((INDEX_CAPACITY - 1) * 2);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void testLappingMoreThanCapacity()
     {
         for (int i = 0; i < INDEX_CAPACITY; i++)
@@ -322,7 +330,8 @@ public class SmallReplayIndexTest extends AbstractLogTest implements ReplayQuery
         verifyNoMessageRead();
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void testGettingLappedTwice()
     {
         for (int i = 0; i < INDEX_CAPACITY; i++)

@@ -20,7 +20,8 @@ import uk.co.real_logic.artio.engine.*;
 import uk.co.real_logic.artio.engine.framer.LibraryInfo;
 import uk.co.real_logic.artio.library.FixLibrary;
 import uk.co.real_logic.artio.library.LibraryConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.FixMatchers.hasConnectionId;
 import static uk.co.real_logic.artio.FixMatchers.hasSessionId;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
@@ -91,23 +92,24 @@ public class SoleLibrarySystemTest extends AbstractGatewayToGatewaySystemTest
         testSystem = new TestSystem(scheduler, acceptingLibrary, initiatingLibrary);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldOnlyHandOffSessionToApplicationWhenConnected()
     {
         launch();
 
         connectAndAcquire();
-        assertNotNull("should automatically receive the session upon logon In SOLE_LIBRARY mode",
-            acceptingSession);
+        assertNotNull(acceptingSession, "should automatically receive the session upon logon In SOLE_LIBRARY mode");
         assertEquals(ACTIVE, acceptingSession.state());
 
-        assertFalse("should not receive session exists callback in sole library mode",
-            acceptingHandler.hasSeenSession());
+        assertFalse(acceptingHandler.hasSeenSession(),
+            "should not receive session exists callback in sole library mode");
 
         assertSequenceResetTimeAtLatestLogon(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportUnreleasedOfflineSessionsInSoleLibraryMode()
     {
         launch();
@@ -132,7 +134,8 @@ public class SoleLibrarySystemTest extends AbstractGatewayToGatewaySystemTest
         assertEquals(1, acceptingSession.lastSentMsgSeqNum());
     }
 
-    @Test(timeout = LONG_TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportManySessionReconnections()
     {
         launch(false, true);
@@ -189,7 +192,8 @@ public class SoleLibrarySystemTest extends AbstractGatewayToGatewaySystemTest
     }
 
     // Replicates a bug reported in issue #361 where reconnecting initiators can't reconnect.
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldAllowReconnectingInitiatorsToReconnect()
     {
         launch();
@@ -203,7 +207,8 @@ public class SoleLibrarySystemTest extends AbstractGatewayToGatewaySystemTest
         disconnectSessions();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldInitiatingLibraryDisconnectSessionOnLibraryTimeout()
     {
         // Equivalent invariant tested in Engine mode in NoLoggingGatewayToGatewaySystemTest
@@ -220,7 +225,8 @@ public class SoleLibrarySystemTest extends AbstractGatewayToGatewaySystemTest
         assertDisconnectedLibraryAndConnection("Initiating Engine did not disconnect session", initiatingEngine);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldAcceptingLibraryDisconnectSessionOnLibraryTimeout()
     {
         // Equivalent invariant tested in Engine mode in NoLoggingGatewayToGatewaySystemTest

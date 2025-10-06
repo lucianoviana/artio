@@ -40,9 +40,12 @@ import org.agrona.collections.Long2LongHashMap;
 import org.agrona.collections.LongHashSet;
 import org.agrona.concurrent.*;
 import org.agrona.concurrent.status.AtomicCounter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 
 import java.io.File;
@@ -54,9 +57,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_INBOUND_MAX_CLAIM_ATTEMPTS;
 import static uk.co.real_logic.artio.LogTag.REPLAY;
@@ -129,7 +132,7 @@ public class ReplayIndexTest extends AbstractLogTest
 
     private ReplayQuery query;
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         mediaDriver = TestFixtures.launchMediaDriver();
@@ -163,14 +166,15 @@ public class ReplayIndexTest extends AbstractLogTest
             DEFAULT_REPLAY_INDEX_SEGMENT_CAPACITY);
     }
 
-    @After
+    @AfterEach
     public void teardown()
     {
         Exceptions.closeAll(query, replayIndex, aeronArchive);
         cleanupMediaDriver(mediaDriver);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldReturnRecordsMatchingQuery()
     {
         indexExampleMessage();
@@ -182,7 +186,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertEquals(1, msgCount);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldReturnLongRecordsMatchingQuery()
     {
         final String testReqId = largeTestReqId();
@@ -198,7 +203,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertEquals(1, msgCount);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldReadSecondRecord()
     {
         indexExampleMessage();
@@ -212,7 +218,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertEquals(2, msgCount);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldReadRecordsFromBeforeARestart()
     {
         indexExampleMessage();
@@ -228,7 +235,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertEquals(1, msgCount);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldReturnAllLogEntriesWhenMostResentMessageRequested()
     {
         indexExampleMessage();
@@ -240,7 +248,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertEquals(1, msgCount);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldNotReturnLogEntriesWithOtherSessionId()
     {
         indexExampleMessage(SESSION_ID, SEQUENCE_NUMBER, SEQUENCE_INDEX);
@@ -254,7 +263,8 @@ public class ReplayIndexTest extends AbstractLogTest
         verifyMessagesRead(2);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldNotReturnLogEntriesWithOutOfRangeSequenceNumbers()
     {
         indexExampleMessage();
@@ -265,7 +275,8 @@ public class ReplayIndexTest extends AbstractLogTest
         verifyNoMessageRead();
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldQueryOverSequenceIndexBoundaries()
     {
         indexExampleMessage();
@@ -281,7 +292,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertEquals(2, msgCount);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldNotStopIndexingWhenBufferFull()
     {
         final int totalMessages = DEFAULT_REPLAY_INDEX_RECORD_CAPACITY;
@@ -299,7 +311,8 @@ public class ReplayIndexTest extends AbstractLogTest
         verifyMessagesRead(expectedMessages);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldBeQueryableWhenLastSegmentIsFull()
     {
         final int segmentCapacity = DEFAULT_REPLAY_INDEX_SEGMENT_CAPACITY;
@@ -317,7 +330,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertThat(startPositions, hasEntry(0L, 0L));
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldUpdatePositionForIndexedRecord()
     {
         indexExampleMessage();
@@ -331,7 +345,8 @@ public class ReplayIndexTest extends AbstractLogTest
             .accept(aeronSessionId, recordingId, alignedEndPosition());
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldOnlyMapSessionFileOnce()
     {
         indexExampleMessage();
@@ -341,7 +356,8 @@ public class ReplayIndexTest extends AbstractLogTest
         verifyMappedFile(SESSION_ID);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+@Timeout(20_000L)
     public void shouldRecordIndexesForMultipleSessions()
     {
         indexExampleMessage();
@@ -352,7 +368,8 @@ public class ReplayIndexTest extends AbstractLogTest
         verifyMappedFile(SESSION_ID_2);
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldQueryStartPositions()
     {
         final ExclusivePublication otherPublication = aeron().addExclusivePublication(CHANNEL, STREAM_ID);
@@ -384,7 +401,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertEquals(otherPrunePosition, startPositions.get(otherRecordingId));
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldQueryStartPositionsInPresenceOfDuplicateSequenceIndices()
     {
         final int newSequenceIndex = SEQUENCE_INDEX + 1;
@@ -409,7 +427,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertEquals(position3, startPositions.get(recordingId));
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldDeleteIndexSegmentsOnSequenceResetWhenNoSegmentsHaveBeenTouched()
     {
         int seqNo = 1;
@@ -441,7 +460,8 @@ public class ReplayIndexTest extends AbstractLogTest
         assertFalse(segmentFile(SESSION_ID, 3).exists());
     }
 
-    @Test(timeout = 20_000L)
+    @Test
+    @Timeout(20_000L)
     public void shouldDeleteIndexSegmentsOnSequenceResetWhenASegmentHasBeenTouched()
     {
         int seqNo = 1;

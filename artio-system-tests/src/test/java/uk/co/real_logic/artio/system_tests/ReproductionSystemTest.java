@@ -16,8 +16,8 @@
 package uk.co.real_logic.artio.system_tests;
 
 import org.agrona.collections.IntArrayList;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.DebugLogger;
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.Side;
@@ -39,8 +39,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static uk.co.real_logic.artio.Constants.*;
 import static uk.co.real_logic.artio.LogTag.REPRODUCTION_TEST;
 import static uk.co.real_logic.artio.TestFixtures.closeMediaDriver;
@@ -49,7 +49,7 @@ import static uk.co.real_logic.artio.system_tests.DebugTcpChannelSupplier.NULL_W
 import static uk.co.real_logic.artio.system_tests.DebugTcpChannelSupplier.WRITE_MAX;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 
-@Ignore // Flaky on CI due to low CPU
+@Disabled // Flaky on CI due to low CPU
 public class ReproductionSystemTest extends AbstractMessageBasedAcceptorSystemTest
 {
     public static final int MESSAGES_SENT = 3;
@@ -112,7 +112,7 @@ public class ReproductionSystemTest extends AbstractMessageBasedAcceptorSystemTe
 
         void verify()
         {
-            assertFalse("Failed STZ count check: see stderr for details", failed);
+            assertFalse(failed, "Failed STZ count check: see stderr for details");
         }
     }
 
@@ -163,8 +163,8 @@ public class ReproductionSystemTest extends AbstractMessageBasedAcceptorSystemTe
 
         final List<FixMessage> messages = otfAcceptor.messages();
         messages.removeIf(msg -> !messageToCheck(msg));
-        assertEquals(toString(originalReceivedMessages) + " vs " + toString(messages),
-            originalReceivedMessages, messages);
+        assertEquals(originalReceivedMessages,
+            messages, toString(originalReceivedMessages) + " vs " + toString(messages));
 
         final int firstBatch = 1 + MESSAGES_SENT + 2;
         final int resentBatch = 2 + MESSAGES_SENT + 2;

@@ -18,7 +18,7 @@ package uk.co.real_logic.artio.engine.logger;
 import org.agrona.DirectBuffer;
 import uk.co.real_logic.artio.messages.FixMessageDecoder;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class FixMessageConsumerValidator
 {

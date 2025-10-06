@@ -1,11 +1,13 @@
 package uk.co.real_logic.artio.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.co.real_logic.artio.util.MessageTypeEncoding.packMessageType;
 
 public class MessageTypeEncodingTest
@@ -60,10 +62,10 @@ public class MessageTypeEncodingTest
         assertEquals(packed, packMessageType(bytesExtra, 1, length));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void willFailToGeneratePackedMessageTypeWithMoreThan8Characters()
     {
-        packMessageType("ABCDEFGHI");
+        assertThrows(IllegalArgumentException.class, () -> packMessageType("ABCDEFGHI"));
     }
 
     @Test

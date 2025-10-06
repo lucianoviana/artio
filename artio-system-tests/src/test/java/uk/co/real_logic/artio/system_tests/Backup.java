@@ -10,8 +10,8 @@ import java.io.File;
 import java.util.Objects;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.co.real_logic.artio.TestFixtures.aeronArchiveContext;
 
 public class Backup
@@ -34,8 +34,8 @@ public class Backup
     public void assertStateReset(
         final ArchivingMediaDriver mediaDriver, final Matcher<Integer> expectedNumberOfRecordings)
     {
-        assertTrue("backupLocation missing", backupLocation.exists());
-        assertTrue("backupLocation not directory", backupLocation.isDirectory());
+        assertTrue(backupLocation.exists(), "backupLocation missing");
+        assertTrue(backupLocation.isDirectory(), "backupLocation not directory");
 
         assertRecordingsDeleted(mediaDriver, expectedNumberOfRecordings);
     }

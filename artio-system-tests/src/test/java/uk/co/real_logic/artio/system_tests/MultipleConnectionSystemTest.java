@@ -1,13 +1,17 @@
 package uk.co.real_logic.artio.system_tests;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.library.LibraryConfiguration;
 import uk.co.real_logic.artio.session.Session;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.TestFixtures.cleanupMediaDriver;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.Timing.assertEventuallyTrue;
@@ -16,7 +20,7 @@ import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 
 public class MultipleConnectionSystemTest extends AbstractGatewayToGatewaySystemTest
 {
-    @Before
+    @BeforeEach
     public void launch()
     {
         deleteAcceptorLogs();
@@ -35,7 +39,8 @@ public class MultipleConnectionSystemTest extends AbstractGatewayToGatewaySystem
         connectSessions();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportConnectionAfterAuthenticationFailure()
     {
         // on first session
@@ -50,7 +55,8 @@ public class MultipleConnectionSystemTest extends AbstractGatewayToGatewaySystem
         messagesCanBeExchanged();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportRepeatedConnectionOfTheSameSessionId()
     {
         acquireAcceptingSession();
@@ -86,7 +92,7 @@ public class MultipleConnectionSystemTest extends AbstractGatewayToGatewaySystem
         assertEquals("UNABLE_TO_LOGON: Disconnected before session active", failureReply.error().getMessage());
     }
 
-    @After
+    @AfterEach
     public void shutdown()
     {
         closeAll(

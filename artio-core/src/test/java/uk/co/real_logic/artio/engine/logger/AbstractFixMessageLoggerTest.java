@@ -24,8 +24,10 @@ import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.OffsetEpochNanoClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.status.AtomicCounter;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.TestFixtures;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
@@ -41,7 +43,7 @@ import java.util.function.LongSupplier;
 import static io.aeron.CommonContext.IPC_CHANNEL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_INBOUND_LIBRARY_STREAM;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_OUTBOUND_LIBRARY_STREAM;
@@ -107,7 +109,7 @@ public abstract class AbstractFixMessageLoggerTest
             DEFAULT_OUTBOUND_REPLAY_STREAM);
     }
 
-    @After
+    @AfterEach
     public void teardown()
     {
         Exceptions.closeAll(logger);
@@ -157,7 +159,7 @@ public abstract class AbstractFixMessageLoggerTest
         assertNoTimestamps();
         logger.onClose();
         assertThat(timestamps, contains(10L, 11L));
-        assertEquals("failed to reshuffle", 0, logger.bufferPosition());
+        assertEquals(0, logger.bufferPosition(), "failed to reshuffle");
     }
 
     @Test
@@ -190,7 +192,7 @@ public abstract class AbstractFixMessageLoggerTest
         assertThat(timestamps.toString(), timestamps, contains(6L));
         timestamps.clear();
 
-        assertEquals("failed to reshuffle", 0, logger.bufferPosition());
+        assertEquals(0, logger.bufferPosition(), "failed to reshuffle");
     }
 
     // From issue #408

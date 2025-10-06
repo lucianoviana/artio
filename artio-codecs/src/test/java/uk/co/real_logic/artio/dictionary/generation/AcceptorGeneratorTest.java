@@ -16,8 +16,8 @@
 package uk.co.real_logic.artio.dictionary.generation;
 
 import org.agrona.generation.StringWriterOutputManager;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.util.AsciiBuffer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
@@ -27,7 +27,7 @@ import java.util.Objects;
 
 import static java.lang.reflect.Modifier.*;
 import static org.agrona.generation.CompilerUtil.compileInMemory;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.dictionary.ExampleDictionary.*;
 import static uk.co.real_logic.artio.dictionary.generation.AcceptorGenerator.*;
 import static uk.co.real_logic.artio.dictionary.generation.Generator.RUNTIME_REJECT_UNKNOWN_ENUM_VALUE_PROPERTY;
@@ -53,7 +53,7 @@ public class AcceptorGeneratorTest
 
     private final MutableAsciiBuffer buffer = new MutableAsciiBuffer(new byte[8 * 1024]);
 
-    @BeforeClass
+    @BeforeAll
     public static void generate() throws Exception
     {
         CONSTANT_GENERATOR.generate();
@@ -76,21 +76,21 @@ public class AcceptorGeneratorTest
     @Test
     public void shouldGenerateAcceptor()
     {
-        assertNotNull("Failed to generate acceptor", acceptor);
+        assertNotNull(acceptor, "Failed to generate acceptor");
 
         final int modifiers = acceptor.getModifiers();
-        assertTrue("Not public", isPublic(modifiers));
-        assertTrue("Not interface", isInterface(modifiers));
+        assertTrue(isPublic(modifiers), "Not public");
+        assertTrue(isInterface(modifiers), "Not interface");
     }
 
     @Test
     public void shouldGenerateDecoder()
     {
-        assertNotNull("Failed to generate decoder", decoder);
+        assertNotNull(decoder, "Failed to generate decoder");
 
         final int modifiers = decoder.getModifiers();
-        assertTrue("Not public", isPublic(modifiers));
-        assertFalse("Not instantiable", isAbstract(modifiers));
+        assertTrue(isPublic(modifiers), "Not public");
+        assertFalse(isAbstract(modifiers), "Not instantiable");
     }
 
     @Test
@@ -106,7 +106,7 @@ public class AcceptorGeneratorTest
                 assertEquals("onHeartbeat", method.getName());
 
                 final Object argument = args[0];
-                assertNotNull("Missing first argument", argument);
+                assertNotNull(argument, "Missing first argument");
                 assertEquals("HeartbeatDecoder", argument.getClass().getSimpleName());
 
                 return null;
@@ -117,7 +117,7 @@ public class AcceptorGeneratorTest
 
         onMessage(decoderInst);
 
-        assertTrue("Proxy not invoked", called[0]);
+        assertTrue(called[0], "Proxy not invoked");
     }
 
     private void onMessage(final Object inst) throws Exception

@@ -22,9 +22,11 @@ import io.aeron.protocol.DataHeaderFlyweight;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.status.AtomicCounter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.OngoingStubbing;
 import org.mockito.verification.VerificationMode;
@@ -36,7 +38,7 @@ import java.nio.ByteOrder;
 
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.ABORT;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.fixp.AbstractFixPParser.STANDARD_TEMPLATE_ID_OFFSET;
@@ -87,7 +89,7 @@ public class ImplicitFixPSenderEndPointTest
         framer,
         mock(FixPReceiverEndPoint.class));
 
-    @Before
+    @BeforeEach
     public void setup()
     {
         when(inboundPublication.tryClaim(anyInt(), any())).then(invocation ->
@@ -353,7 +355,7 @@ public class ImplicitFixPSenderEndPointTest
         reset(fixPSenderEndPoints);
     }
 
-    @After
+    @AfterEach
     public void safeAtEnd()
     {
         verify(fixPSenderEndPoints, never()).backPressured(endPoint);
@@ -367,12 +369,12 @@ public class ImplicitFixPSenderEndPointTest
 
     private void reattempt()
     {
-        assertTrue("reattempt() false", endPoint.reattempt());
+        assertTrue(endPoint.reattempt(), "reattempt() false");
     }
 
     private void incompleteReattempt()
     {
-        assertFalse("reattempt() true", endPoint.reattempt());
+        assertFalse(endPoint.reattempt(), "reattempt() true");
     }
 
     private int checkBackpressuredResent(final int num, final InvocationOnMock inv)
@@ -455,9 +457,9 @@ public class ImplicitFixPSenderEndPointTest
         final ByteBuffer byteBuffer = invocation.getArgument(0);
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-        assertEquals("wrong expectedWriteLimit", expectedWriteLimit, byteBuffer.remaining());
+        assertEquals(expectedWriteLimit, byteBuffer.remaining(), "wrong expectedWriteLimit");
         final int position = byteBuffer.position();
-        assertEquals("wrong num", num, byteBuffer.getInt(position + START_INDEX));
+        assertEquals(num, byteBuffer.getInt(position + START_INDEX), "wrong num");
         if (expectedWriteLimit == MSG_SIZE)
         {
             // only check the template is correct for the first part of a back-pressured message

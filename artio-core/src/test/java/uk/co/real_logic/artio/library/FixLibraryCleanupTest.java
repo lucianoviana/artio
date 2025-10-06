@@ -19,15 +19,15 @@ import io.aeron.archive.ArchivingMediaDriver;
 import io.aeron.exceptions.DriverTimeoutException;
 import org.agrona.CloseHelper;
 import org.agrona.IoUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.TestFixtures;
 
 import java.io.File;
 
 import static io.aeron.CommonContext.IPC_CHANNEL;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FixLibraryCleanupTest
 {
@@ -46,15 +46,15 @@ public class FixLibraryCleanupTest
 
             try
             {
-                assertTrue(monitoringFile + " does not exist", monitoringFile.exists());
+                assertTrue(monitoringFile.exists(), monitoringFile + " does not exist");
             }
             finally
             {
                 CloseHelper.close(library);
             }
 
-            assertFalse(monitoringFile + " hasn't been deleted", monitoringFile.exists());
-            assertFalse(histogramLoggingFile + " hasn't been deleted", histogramLoggingFile.exists());
+            assertFalse(monitoringFile.exists(), monitoringFile + " hasn't been deleted");
+            assertFalse(histogramLoggingFile.exists(), histogramLoggingFile + " hasn't been deleted");
         }
         finally
         {
@@ -90,8 +90,8 @@ public class FixLibraryCleanupTest
             final File monitoringFile = new File(configuration.monitoringFile());
             final File histogramLoggingFile = new File(configuration.histogramLoggingFile());
 
-            assertFalse(monitoringFile + " hasn't been deleted", monitoringFile.exists());
-            assertFalse(histogramLoggingFile + " hasn't been deleted", histogramLoggingFile.exists());
+            assertFalse(monitoringFile.exists(), monitoringFile + " hasn't been deleted");
+            assertFalse(histogramLoggingFile.exists(), histogramLoggingFile + " hasn't been deleted");
         }
     }
 

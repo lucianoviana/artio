@@ -29,9 +29,11 @@ import org.agrona.concurrent.QueuedPipe;
 import org.agrona.concurrent.status.CountersReader;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -68,7 +70,7 @@ import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_NAME_PREFIX;
 import static uk.co.real_logic.artio.GatewayProcess.NO_CONNECTION_ID;
@@ -148,7 +150,7 @@ public class FramerTest
         LIBRARY_ID, LIBRARY_NAME, livenessDetector, 1,
         false);
 
-    @Before
+    @BeforeEach
     @SuppressWarnings("unchecked")
     public void setUp() throws IOException
     {
@@ -230,7 +232,7 @@ public class FramerTest
             fixDictionary, false));
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException
     {
         framer.onClose();
@@ -250,7 +252,7 @@ public class FramerTest
     {
         aClientConnects();
 
-        assertTrue("Client has failed to connect", client.finishConnect());
+        assertTrue(client.finishConnect(), "Client has failed to connect");
     }
 
     @Test
@@ -314,7 +316,7 @@ public class FramerTest
 
         framer.doWork();
 
-        assertNull("Sender has connected to server", server.accept());
+        assertNull(server.accept(), "Sender has connected to server");
         assertEquals(NO_CONNECTION_ID, connectionId.get());
         verifyErrorPublished(UNKNOWN_LIBRARY);
     }
@@ -1000,7 +1002,7 @@ public class FramerTest
     private void aClientSendsData() throws IOException
     {
         clientBuffer.position(0);
-        assertEquals("Has written bytes", clientBuffer.remaining(), client.write(clientBuffer));
+        assertEquals(clientBuffer.remaining(), client.write(clientBuffer), "Has written bytes");
     }
 
     private void verifyEndpointsCreated()

@@ -15,13 +15,13 @@
  */
 package uk.co.real_logic.artio.engine.framer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.function.LongConsumer;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.co.real_logic.artio.engine.framer.ReceiverEndPoints.disconnectILinkConnections;
@@ -43,7 +43,7 @@ public class ReceiverEndPointsTest
 
         final ReceiverEndPoint[] result = disconnectILinkConnections(LIBRARY_ID, endPoints, removeFunc);
 
-        assertArrayEquals(Arrays.toString(result), expected, result);
+        assertArrayEquals(expected, result, Arrays.toString(result));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class ReceiverEndPointsTest
 
         final ReceiverEndPoint[] result = disconnectILinkConnections(LIBRARY_ID, endPoints, removeFunc);
 
-        assertArrayEquals(Arrays.toString(result), expected, result);
+        assertArrayEquals(expected, result, Arrays.toString(result));
     }
 
     @Test

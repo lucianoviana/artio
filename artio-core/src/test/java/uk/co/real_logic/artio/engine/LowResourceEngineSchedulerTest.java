@@ -18,7 +18,7 @@ package uk.co.real_logic.artio.engine;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.BusySpinIdleStrategy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 

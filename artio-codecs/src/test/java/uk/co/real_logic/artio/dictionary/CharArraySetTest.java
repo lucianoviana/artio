@@ -15,11 +15,11 @@
  */
 package uk.co.real_logic.artio.dictionary;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CharArraySetTest
 {
@@ -40,7 +40,7 @@ public class CharArraySetTest
         for (final String example : EXAMPLES)
         {
             final char[] value = Arrays.copyOf(example.toCharArray(), example.length());
-            assertTrue(example + " isn't a member of the char array set", CHAR_ARRAY_SET.contains(value, value.length));
+            assertTrue(CHAR_ARRAY_SET.contains(value, value.length), example + " isn't a member of the char array set");
         }
     }
 }

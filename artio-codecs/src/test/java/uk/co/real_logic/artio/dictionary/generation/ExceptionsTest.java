@@ -1,12 +1,12 @@
 package uk.co.real_logic.artio.dictionary.generation;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.SocketException;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.co.real_logic.artio.dictionary.generation.Exceptions.isJustDisconnect;
 
 public class ExceptionsTest

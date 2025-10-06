@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class CodecGenerationWrapper
 {
@@ -54,7 +54,7 @@ class CodecGenerationWrapper
         encode(encoder);
 
         final String encoded = buffer.getStringWithoutLengthAscii(offset, length);
-        assertEquals(encoder.toString(), msg, encoded);
+        assertEquals(msg, encoded, encoder.toString());
     }
 
     void encode(final Encoder encoder)

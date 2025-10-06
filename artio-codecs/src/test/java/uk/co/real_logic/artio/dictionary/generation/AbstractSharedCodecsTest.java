@@ -40,7 +40,7 @@ import java.util.function.UnaryOperator;
 
 import static java.lang.reflect.Modifier.isAbstract;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.dictionary.generation.CodecGenerationWrapper.dictionaryStream;
 import static uk.co.real_logic.artio.dictionary.generation.CodecGenerationWrapper.setupHeader;
 import static uk.co.real_logic.artio.dictionary.generation.CodecUtil.MISSING_CHAR;

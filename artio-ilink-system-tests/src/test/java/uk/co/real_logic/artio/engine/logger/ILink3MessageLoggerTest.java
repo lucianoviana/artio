@@ -16,7 +16,7 @@
 package uk.co.real_logic.artio.engine.logger;
 
 import iLinkBinary.*;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import uk.co.real_logic.artio.fixp.FixPMessageConsumer;
 import uk.co.real_logic.artio.ilink.ILink3Proxy;
 import uk.co.real_logic.artio.ilink.Ilink3Protocol;
@@ -34,7 +34,7 @@ public class ILink3MessageLoggerTest extends AbstractFixMessageLoggerTest
         streamIds.add(header.streamId());
     };
 
-    @Before
+    @BeforeEach
     public void setup()
     {
         setup(iLinkMessageConsumer);

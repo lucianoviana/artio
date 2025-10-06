@@ -15,8 +15,10 @@
  */
 package uk.co.real_logic.artio.system_tests;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
 import uk.co.real_logic.artio.engine.FixEngine;
@@ -24,7 +26,7 @@ import uk.co.real_logic.artio.library.LibraryConfiguration;
 import uk.co.real_logic.artio.library.SessionConfiguration;
 import uk.co.real_logic.artio.session.Session;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 
@@ -32,7 +34,7 @@ public class ConnectAfterTimeoutSystemTest extends AbstractGatewayToGatewaySyste
 {
     private DebugTcpChannelSupplier debugTcpChannelSupplier;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         delete(ACCEPTOR_LOGS);
@@ -52,7 +54,8 @@ public class ConnectAfterTimeoutSystemTest extends AbstractGatewayToGatewaySyste
         testSystem = new TestSystem(initiatingLibrary);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void connectsOnceSystemIsUp()
     {
         debugTcpChannelSupplier.disable();
@@ -78,7 +81,8 @@ public class ConnectAfterTimeoutSystemTest extends AbstractGatewayToGatewaySyste
         assertInitiatingSequenceIndexIs(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void testConnectingAfterConnectionTimeouts()
     {
         // Launch the acceptor

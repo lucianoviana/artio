@@ -16,22 +16,29 @@
 package uk.co.real_logic.artio.fields;
 
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class LocalMktDateEncoderInValidCasesTest
 {
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void cannotEncodeBelowMinimum()
     {
-        encode(LocalMktDateEncoder.MIN_EPOCH_DAYS - 1);
+        assertThrows(IllegalArgumentException.class, () ->
+        {
+            encode(LocalMktDateEncoder.MIN_EPOCH_DAYS - 1);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void cannotEncodeAboveMaximum()
     {
-        encode(LocalMktDateEncoder.MAX_EPOCH_DAYS + 1);
+        assertThrows(IllegalArgumentException.class, () ->
+        {
+            encode(LocalMktDateEncoder.MAX_EPOCH_DAYS + 1);
+        });
     }
 
     private void encode(final int timestamp)

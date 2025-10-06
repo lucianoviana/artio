@@ -17,9 +17,9 @@ package uk.co.real_logic.artio.dictionary.generation;
 
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.dictionary.ExampleDictionary.LONG_VALUE_IN_BYTES;
 
 public class CodecUtilTest

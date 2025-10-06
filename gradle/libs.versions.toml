@@ -10,8 +10,7 @@ hdrHistogram = "2.2.2"
 httpcore = "4.4.14"
 jmh = "1.37"
 json = "20250517"
-junit = "5.13.2"
-junit4 = "4.13.2"
+junit = "6.0.0"
 mockito = "5.20.0"
 plexus = "3.3.0"
 sbe = "1.36.0"
@@ -33,7 +32,6 @@ jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-generator-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
 json = { group = "org.json", name = "json", version.ref = "json" }
 junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
-junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
 mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 plexus-utils = { group = "org.codehaus.plexus", name = "plexus-utils", version.ref = "plexus" }
 sbe = { group = "uk.co.real-logic", name = "sbe-tool", version.ref = "sbe" }

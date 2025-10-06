@@ -15,18 +15,18 @@
  */
 package uk.co.real_logic.artio.dictionary.generation;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.builder.Decoder;
 import uk.co.real_logic.artio.fields.RejectReason;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static uk.co.real_logic.artio.dictionary.ExampleDictionary.*;
 
 public class DecoderGeneratorCopyingTest extends AbstractDecoderGeneratorTest
 {
-    @BeforeClass
+    @BeforeAll
     public static void generate() throws Exception
     {
         generate(false);

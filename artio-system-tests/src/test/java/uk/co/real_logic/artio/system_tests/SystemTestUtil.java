@@ -56,8 +56,8 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.co.real_logic.artio.CommonConfiguration.*;
 import static uk.co.real_logic.artio.GatewayProcess.NO_CONNECTION_ID;
 import static uk.co.real_logic.artio.Reply.State.COMPLETED;
@@ -437,8 +437,8 @@ public final class SystemTestUtil
 
     static void assertConnected(final Session session)
     {
-        assertNotNull("Session is null", session);
-        assertEquals("Session has failed to connect", ACTIVE, session.state());
+        assertNotNull(session, "Session is null");
+        assertEquals(ACTIVE, session.state(), "Session has failed to connect");
     }
 
     static List<LibraryInfo> libraries(final FixEngine engine)

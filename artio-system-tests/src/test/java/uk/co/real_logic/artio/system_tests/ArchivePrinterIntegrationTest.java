@@ -29,8 +29,9 @@ import static uk.co.real_logic.artio.system_tests.SystemTestUtil.newInitiatingLi
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import io.aeron.Aeron;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
@@ -41,7 +42,7 @@ public class ArchivePrinterIntegrationTest extends AbstractGatewayToGatewaySyste
 {
     private final FakeConnectHandler fakeConnectHandler = new FakeConnectHandler();
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         delete(ACCEPTOR_LOGS);
@@ -60,7 +61,8 @@ public class ArchivePrinterIntegrationTest extends AbstractGatewayToGatewaySyste
         connectSessions();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldUseDefaultDelimiter()
     {
         setupAndExchangeMessages();
@@ -81,7 +83,8 @@ public class ArchivePrinterIntegrationTest extends AbstractGatewayToGatewaySyste
         assertThat(outputBytes.toString(), containsString("\u0001112=hi"));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void canUseSpecifiedCharAsDelimiter()
     {
         setupAndExchangeMessages();

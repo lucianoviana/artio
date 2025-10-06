@@ -16,8 +16,8 @@
 package uk.co.real_logic.artio.engine.logger;
 
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.decoder.LogonDecoder;
 import uk.co.real_logic.artio.messages.MessageStatus;
 import uk.co.real_logic.artio.protocol.GatewayPublication;
@@ -41,7 +41,7 @@ public class FixMessageLoggerTest extends AbstractFixMessageLoggerTest
         compactionSize = 500;
     }
 
-    @Before
+    @BeforeEach
     public void setup()
     {
         setup(null);

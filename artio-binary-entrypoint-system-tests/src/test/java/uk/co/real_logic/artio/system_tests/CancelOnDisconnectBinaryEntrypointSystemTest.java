@@ -17,8 +17,12 @@ package uk.co.real_logic.artio.system_tests;
 
 import b3.entrypoint.fixp.sbe.CancelOnDisconnectType;
 import b3.entrypoint.fixp.sbe.DeltaInMillisEncoder;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
 import uk.co.real_logic.artio.engine.FixPSessionInfo;
@@ -32,8 +36,8 @@ import static b3.entrypoint.fixp.sbe.CancelOnDisconnectType.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.co.real_logic.artio.CommonConfiguration.NO_FIXP_MAX_RETRANSMISSION_RANGE;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_NO_LOGON_DISCONNECT_TIMEOUT_IN_MS;
 import static uk.co.real_logic.artio.system_tests.CancelOnDisconnectSystemTest.COD_TEST_TIMEOUT_IN_MS;
@@ -45,13 +49,14 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
     private final FakeTimeoutHandler timeoutHandler = new FakeTimeoutHandler();
     private BinaryEntryPointClient client;
 
-    @After
+    @AfterEach
     public void shutdown()
     {
         Exceptions.closeAll(client);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldTriggerCancelOnDisconnectTimeoutForLogout() throws IOException
     {
         setup(CANCEL_ON_TERMINATE_ONLY, COD_TEST_TIMEOUT_IN_MS);
@@ -62,7 +67,8 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
         assertTriggersCancelOnDisconnect(logoutTimeInNs);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotTriggerCancelOnDisconnectTimeoutWhenClientDisconnectForLogoutOnly() throws IOException
     {
         setup(CANCEL_ON_TERMINATE_ONLY, COD_TEST_TIMEOUT_IN_MS);
@@ -72,7 +78,8 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
         assertHandlerNotInvoked(LONG_COD_TEST_TIMEOUT_IN_MS);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldTriggerCancelOnDisconnectTimeoutForDisconnect() throws IOException
     {
         setup(CANCEL_ON_DISCONNECT_ONLY, COD_TEST_TIMEOUT_IN_MS);
@@ -83,7 +90,8 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
         assertTriggersCancelOnDisconnect(logoutTimeInNs);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotTriggerCancelOnDisconnectTimeoutWhenClientTerminateForDisconnectOnly() throws IOException
     {
         setup(CANCEL_ON_DISCONNECT_ONLY, COD_TEST_TIMEOUT_IN_MS);
@@ -93,7 +101,8 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
         assertHandlerNotInvoked(LONG_COD_TEST_TIMEOUT_IN_MS);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotTriggerCancelOnDisconnectTimeoutWhenConfiguredNotTo() throws IOException
     {
         setup(DO_NOT_CANCEL_ON_DISCONNECT_OR_TERMINATE, DeltaInMillisEncoder.timeNullValue());
@@ -102,7 +111,8 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
         assertDisconnectWithHandlerNotInvoked();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldCorrectTimeoutsOverLimit() throws IOException
     {
         setup(
@@ -112,7 +122,8 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
             60_000);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldCorrectNullTimeouts() throws IOException
     {
         setup(
@@ -122,7 +133,8 @@ public class CancelOnDisconnectBinaryEntrypointSystemTest extends AbstractBinary
             DeltaInMillisEncoder.timeNullValue());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotTriggerCancelOnDisconnectTimeoutIfReconnectOccurs() throws IOException
     {
         setup(CANCEL_ON_DISCONNECT_OR_TERMINATE, LONG_COD_TEST_TIMEOUT_IN_MS);

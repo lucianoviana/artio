@@ -25,8 +25,10 @@ import org.agrona.LangUtil;
 import org.agrona.collections.IntArrayList;
 import org.agrona.collections.IntHashSet;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import uk.co.real_logic.artio.MonitoringAgentFactory;
@@ -54,7 +56,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.TestFixtures.*;
@@ -131,7 +133,7 @@ public class ILink3SystemTest
         library = testSystem.connect(libraryConfig);
     }
 
-    @After
+    @AfterEach
     public void close()
     {
         closeArtio();

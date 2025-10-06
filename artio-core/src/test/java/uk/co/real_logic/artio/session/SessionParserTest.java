@@ -17,8 +17,8 @@ package uk.co.real_logic.artio.session;
 
 import org.agrona.LangUtil;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.decoder.AbstractLogonDecoder;
 import uk.co.real_logic.artio.decoder.LogonDecoder;
 import uk.co.real_logic.artio.dictionary.FixDictionary;
@@ -30,7 +30,7 @@ import uk.co.real_logic.artio.validation.AuthenticationStrategy;
 import uk.co.real_logic.artio.validation.MessageValidationStrategy;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.Constants.TARGET_COMP_ID;
 import static uk.co.real_logic.artio.dictionary.generation.CodecUtil.MISSING_INT;
@@ -48,7 +48,7 @@ public class SessionParserTest
         mockSession, validationStrategy, LangUtil::rethrowUnchecked,
         false, true, messageInfo, null);
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         parser.fixDictionary(FixDictionary.of(FixDictionary.findDefault()));

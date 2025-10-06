@@ -15,8 +15,10 @@
  */
 package uk.co.real_logic.artio.system_tests;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.engine.framer.LibraryInfo;
 import uk.co.real_logic.artio.library.FixLibrary;
@@ -30,7 +32,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.Timing.assertEventuallyTrue;
 import static uk.co.real_logic.artio.Timing.withTimeout;
 import static uk.co.real_logic.artio.messages.SessionReplyStatus.OK;
@@ -43,13 +45,14 @@ import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 public class OfflineSystemTest extends AbstractGatewayToGatewaySystemTest
 {
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         launchGatewayToGateway();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToLookupOfflineSession()
     {
         acquireAcceptingSession();
@@ -87,7 +90,8 @@ public class OfflineSystemTest extends AbstractGatewayToGatewaySystemTest
         }, 3_000L);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void engineShouldNotAcquireTimedOutOfflineSessions()
     {
         logoutInitiatingSession();
@@ -103,7 +107,8 @@ public class OfflineSystemTest extends AbstractGatewayToGatewaySystemTest
         assertThat(libraries.get(0).sessions(), hasSize(0));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotAcquireOrInitiateOfflineSessionOwnedByAnotherLibrary()
     {
         final long sessionId = initiatingSession.id();

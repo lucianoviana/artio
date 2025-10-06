@@ -1,12 +1,12 @@
 package uk.co.real_logic.artio.engine;
 
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.dictionary.LongDictionary;
 import uk.co.real_logic.artio.otf.OtfParser;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.engine.logger.ReplayerTest.MESSAGE_REQUIRING_LONGER_BODY_LENGTH;
 
 public class PossDupFinderTest

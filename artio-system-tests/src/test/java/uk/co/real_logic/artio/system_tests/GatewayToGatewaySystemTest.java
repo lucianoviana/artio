@@ -20,12 +20,12 @@ import org.agrona.LangUtil;
 import org.agrona.collections.IntHashSet;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.status.CountersReader;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import uk.co.real_logic.artio.*;
 import uk.co.real_logic.artio.builder.*;
 import uk.co.real_logic.artio.decoder.ThreeCharacterTypeMessageDecoder;
@@ -52,7 +52,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.Constants.*;
 import static uk.co.real_logic.artio.FixCounters.FixCountersId.INVALID_LIBRARY_ATTEMPTS_TYPE_ID;
 import static uk.co.real_logic.artio.FixCounters.lookupCounterIds;
@@ -72,26 +72,24 @@ import static uk.co.real_logic.artio.system_tests.FixMessage.hasMessageSequenceN
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.PASSWORD;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 
-@RunWith(Theories.class)
 public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTest
 {
     private static final String NEW_PASSWORD = "ABCDEF";
 
-    @DataPoint
     public static final boolean METADATA_ON = true;
 
-    @DataPoint
     public static final boolean METADATA_OFF = false;
 
     private boolean testWithMetaData = METADATA_OFF;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         launchGatewayToGateway();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void messagesCanBeSentFromInitiatorToAcceptor()
     {
         assertLastLogonEquals(1, 0);
@@ -102,7 +100,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertInitiatingSequenceIndexIs(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void messagesCanBeSentFromInitiatorToAcceptingLibrary()
     {
         acquireAcceptingSession();
@@ -116,7 +115,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         messageTimingHandler.verifyConsecutiveSequenceNumbers(2);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void messagesWithTypesLongerThanOneCharacterCanBeExchanged()
     {
         acquireAcceptingSession();
@@ -136,7 +136,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertEquals(ThreeCharacterTypeMessageDecoder.MESSAGE_TYPE, three.messageType());
     }
 
-    @Theory
+    @ParameterizedTest
+    @ValueSource(booleans = {METADATA_OFF, METADATA_ON})
     public void shouldProcessResendRequests(final boolean testWithMetaData)
     {
         this.testWithMetaData = testWithMetaData;
@@ -146,7 +147,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         gatewayProcessesResendRequests(testReqID);
     }
 
-    @Theory
+    @ParameterizedTest
+    @ValueSource(booleans = {METADATA_OFF, METADATA_ON})
     public void shouldEnsureThatSequenceNumberAfterResendRequest(final boolean testWithMetaData)
     {
         this.testWithMetaData = testWithMetaData;
@@ -171,7 +173,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertEquals(lastSequenceNumber + 1, nextMessage.messageSequenceNumber());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldProcessDuplicateResendRequests()
     {
         final String testReqID = "AAA";
@@ -197,15 +200,16 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
                     .filter(msg -> testReqID.equals(msg.testReqId()))
                     .count());
 
-                assertNull("Detected Error", acceptingOtfAcceptor.lastError());
-                assertTrue("Failed to complete parsing", acceptingOtfAcceptor.isCompleted());
+                assertNull(acceptingOtfAcceptor.lastError(), "Detected Error");
+                assertTrue(acceptingOtfAcceptor.isCompleted(), "Failed to complete parsing");
             });
         assertResendsCompleted(2, hasItems(1, 0));
 
         assertSequenceIndicesAre(0);
     }
 
-    @Theory
+    @ParameterizedTest
+    @ValueSource(booleans = {METADATA_OFF, METADATA_ON})
     public void gatewayProcessesResendRequestsOfFragmentedMessages(final boolean testWithMetaData)
     {
         this.testWithMetaData = testWithMetaData;
@@ -273,7 +277,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         testSystem.awaitSend("Failed to send message", sender);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void gatewayProcessesResendRequestsOfAdminMessages()
     {
         acquireAcceptingSession();
@@ -287,13 +292,15 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void gatewayResendRequestsAreControlled()
     {
         gatewayResendRequestsAreControlled("other");
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void gatewayResendRequestsAreControlledWithCustomRejectMessage()
     {
         fakeResendRequestController.customResend(true);
@@ -334,13 +341,15 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldControlResendRequestsAreUnderBackPressure()
     {
         gatewayResendRequestsAreControlledUnderBackPressure();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldControlResendRequestsAreUnderBackPressureWithCustomRejectMessage()
     {
         fakeResendRequestController.customResend(true);
@@ -373,7 +382,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertEquals(2, fakeResendRequestController.callCount());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldControlResendRequestsWithOverriddenBeginSeqNo()
     {
         fakeResendRequestController.maxResends(1);
@@ -431,7 +441,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
     }
 
     // Test exists to replicate a faily complex bug involving a sequence number issue after a library timeout.
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotSendDuplicateSequenceNumbersAfterTimeout()
     {
         acquireAcceptingSession();
@@ -457,7 +468,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         sendExampleMessage(testSystem, fail, acceptingSession);
 
         testSystem.awaitReply(reply);
-        assertEquals(reply.toString(), Reply.State.COMPLETED, reply.state());
+        assertEquals(Reply.State.COMPLETED, reply.state(), reply.toString());
         assertSame(acceptingSession, acceptingHandler.lastSession());
 
         exchangeExampleMessageFromAcceptorToInitiator("4");
@@ -466,8 +477,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         final List<Integer> receivedSequenceNumbers = initiatingOtfAcceptor.messageSequenceNumbers();
         final IntHashSet uniqueReceivedNumbers = new IntHashSet();
         uniqueReceivedNumbers.addAll(receivedSequenceNumbers);
-        assertEquals(uniqueReceivedNumbers + " vs " + receivedSequenceNumbers,
-            uniqueReceivedNumbers.size(), receivedSequenceNumbers.size());
+        assertEquals(uniqueReceivedNumbers.size(), receivedSequenceNumbers.size(),
+            uniqueReceivedNumbers + " vs " + receivedSequenceNumbers);
         initiatingOtfAcceptor.messages().forEach(msg -> assertNotEquals(fail, msg.testReqId()));
 
         // Ensure that the session is still active.
@@ -477,7 +488,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertInvalidLibraryAttempts(acceptingSession.connectionId());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotifyReconnectedLibrariesOfSessions()
     {
         acquireAcceptingSession();
@@ -497,7 +509,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertEquals(acceptingSession.id(), sessionExists.surrogateId());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotifyReconnectedLibrariesOfDisconnectedSessions()
     {
         acquireAcceptingSession();
@@ -517,7 +530,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         // Wait for the library to detect the timeout internally.
         testSystem.add(acceptingLibrary);
         testSystem.await("Library failed to detect timeout", acceptingHandler::hasTimedOut);
-        assertTrue("Failed to notify library of disconnect", acceptingHandler.hasDisconnected());
+        assertTrue(acceptingHandler.hasDisconnected(), "Failed to notify library of disconnect");
     }
 
     private void assertInvalidLibraryAttempts(final long connectionId)
@@ -534,7 +547,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void messagesCanBeSentFromAcceptorToInitiator()
     {
         acquireAcceptingSession();
@@ -544,7 +558,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void initiatorSessionCanBeDisconnected()
     {
         acquireAcceptingSession();
@@ -556,7 +571,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void initiatorSessionCanBeDisconnectedCustomLogoutMessage()
     {
         acquireAcceptingSession();
@@ -571,7 +587,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void acceptorSessionCanBeDisconnected()
     {
         acquireAcceptingSession();
@@ -582,13 +599,15 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void sessionsCanReconnect()
     {
         super.sessionsCanReconnect();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void sessionsListedInAdminApi()
     {
         final List<LibraryInfo> libraries = libraries(initiatingEngine);
@@ -615,7 +634,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertAllSessionsOnlyContains(initiatingEngine, initiatingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void multipleLibrariesCanExchangeMessages()
     {
         final int initiator1MessageCount = initiatingOtfAcceptor.messages().size();
@@ -650,7 +670,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertInitiatingSequenceIndexIs(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void sequenceNumbersShouldResetOverDisconnects()
     {
         acquireAcceptingSession();
@@ -675,12 +696,13 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(1);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void acceptorsShouldHandleInitiatorDisconnectsGracefully()
     {
         acquireAcceptingSession();
 
-        assertFalse("Premature Acceptor Disconnect", acceptingHandler.hasDisconnected());
+        assertFalse(acceptingHandler.hasDisconnected(), "Premature Acceptor Disconnect");
 
         closeInitiatingEngine();
         testSystem.remove(initiatingLibrary);
@@ -692,7 +714,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         }, 10_000);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void librariesShouldBeAbleToReleaseInitiatedSessionToEngine()
     {
         acquireAcceptingSession();
@@ -700,7 +723,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         releaseSessionToEngineAndCheckCache(initiatingSession, initiatingLibrary, initiatingEngine, initiatingHandler);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void librariesShouldBeAbleToReleaseAcceptedSessionToEngine()
     {
         acquireAcceptingSession();
@@ -724,7 +748,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertCountersClosed(false, reAcquiredSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void librariesShouldBeAbleToAcquireReleasedInitiatedSessions()
     {
         acquireAcceptingSession();
@@ -743,7 +768,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceResetTimeAtLatestLogon(initiatingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void librariesShouldBeAbleToAcquireReleasedAcceptedSessions()
     {
         acquireAcceptingSession();
@@ -763,13 +789,15 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceResetTimeAtLatestLogon(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveCatchupReplayAfterReconnect()
     {
         shouldReceiveCatchupReplay(() -> acceptingSession.sequenceIndex(), OK);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveCatchupReplayForSequenceNumberTooHigh()
     {
         shouldReceiveCatchupReplay(() -> 100, SEQUENCE_NUMBER_TOO_HIGH);
@@ -824,7 +852,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertInitiatingSequenceIndexIs(1);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void enginesShouldManageAcceptingSession()
     {
         acquireAcceptingSession();
@@ -834,7 +863,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
             initiatingSession, initiatingOtfAcceptor);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void enginesShouldManageInitiatingSession()
     {
         acquireAcceptingSession();
@@ -844,7 +874,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
             acceptingSession, acceptingOtfAcceptor);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void librariesShouldNotBeAbleToAcquireSessionsThatDontExist()
     {
         final SessionReplyStatus status = requestSession(
@@ -853,7 +884,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertEquals(SessionReplyStatus.UNKNOWN_SESSION, status);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void librariesShouldBeNotifiedOfGatewayManagedSessionsOnConnect()
     {
         try (LibraryDriver library2 = LibraryDriver.accepting(testSystem, nanoClock))
@@ -862,7 +894,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void engineAndLibraryPairsShouldBeRestartable()
     {
         messagesCanBeExchanged();
@@ -884,7 +917,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertSequenceIndicesAre(1);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void enginesShouldBeRestartable()
     {
         messagesCanBeExchanged();
@@ -906,8 +940,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         initiatingEngineHasLibraryConnected();
 
-        assertTrue("acceptingLibrary has failed to connect", acceptingLibrary.isConnected());
-        assertTrue("initiatingLibrary is no longer connected", initiatingLibrary.isConnected());
+        assertTrue(acceptingLibrary.isConnected(), "acceptingLibrary has failed to connect");
+        assertTrue(initiatingLibrary.isConnected(), "initiatingLibrary is no longer connected");
 
         wireSessions();
 
@@ -924,7 +958,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertThat(libraryInfos, hasSize(2));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void engineShouldAcquireTimedOutAcceptingSessions()
     {
         final String invalidTestReqId = "Too Late";
@@ -960,7 +995,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertThat(initiatingOtfAcceptor.messages().toString(), not(containsString(invalidTestReqId)));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void engineShouldAcquireTimedOutInitiatingSessions()
     {
         testSystem.remove(initiatingLibrary);
@@ -968,7 +1004,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         initiatingEngineHasSessionAndLibraryIsNotified();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void engineShouldAcquireAcceptingSessionsFromClosedLibrary()
     {
         acquireAcceptingSession();
@@ -979,7 +1016,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         acceptingEngineHasSessionAndLibraryIsNotified();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void engineShouldAcquireInitiatingSessionsFromClosedLibrary()
     {
         initiatingLibrary.close();
@@ -989,7 +1027,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         initiatingEngineHasSessionAndLibraryIsNotified();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void libraryShouldSeeReleasedAcceptingSession()
     {
         acquireAcceptingSession();
@@ -1003,7 +1042,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void libraryShouldSeeReleasedInitiatingSession()
     {
         releaseSessionToEngine(initiatingSession, initiatingLibrary, initiatingEngine);
@@ -1027,14 +1067,15 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReconnectToBouncedGatewayWithoutTimeout()
     {
         acquireAcceptingSession();
 
         messagesCanBeExchanged();
 
-        assertTrue("Session not active", acceptingSession.isActive());
+        assertTrue(acceptingSession.isActive(), "Session not active");
 
         closeAcceptingEngine();
 
@@ -1062,7 +1103,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         messagesCanBeExchanged();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldExchangeLargeMessages()
     {
         acquireAcceptingSession();
@@ -1074,7 +1116,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertReceivedSingleHeartbeat(testSystem, acceptingOtfAcceptor, testReqID);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldLookupSessionIdsOfSessions()
     {
         final long sessionId = lookupSessionId(INITIATOR_ID, ACCEPTOR_ID, initiatingEngine).resultIfPresent();
@@ -1082,7 +1125,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertEquals(initiatingSession.id(), sessionId);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotLookupSessionIdsOfUnknownSessions()
     {
         final Reply<Long> sessionIdReply = lookupSessionId("foo", "bar", initiatingEngine);
@@ -1091,7 +1135,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertThat(sessionIdReply.error(), instanceOf(IllegalArgumentException.class));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldResetSequenceNumbersOfEngineManagedSessions()
     {
         messagesCanBeExchanged();
@@ -1099,7 +1144,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         resetSequenceNumbersViaEngineApi();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldResetSequenceNumbersOfLibraryManagedSessions()
     {
         messagesCanBeExchanged();
@@ -1136,7 +1182,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         return timeRange;
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotResetSequenceNumbersOfMissingSession()
     {
         messagesCanBeExchanged();
@@ -1144,19 +1191,20 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertInitSeqNum(2, 2, 0);
 
         final Reply<?> resetSequenceNumber = resetSequenceNumber(400);
-        assertTrue("Should have errored: " + resetSequenceNumber, resetSequenceNumber.hasErrored());
+        assertTrue(resetSequenceNumber.hasErrored(), "Should have errored: " + resetSequenceNumber);
         final String message = resetSequenceNumber.error().getMessage();
-        assertTrue(message, message.contains("Unknown sessionId: 400"));
+        assertTrue(message.contains("Unknown sessionId: 400"), message);
 
         assertInitSeqNum(2, 2, 0);
     }
 
     private void replyCompleted(final Reply<?> resetSequenceNumber)
     {
-        assertTrue("Should be complete: " + resetSequenceNumber, resetSequenceNumber.hasCompleted());
+        assertTrue(resetSequenceNumber.hasCompleted(), "Should be complete: " + resetSequenceNumber);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldCombineGapFilledReplays()
     {
         messagesCanBeExchanged();
@@ -1180,7 +1228,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         messagesCanBeExchanged();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldCleanupAeronResourcesUponDisconnectDuringResend()
     {
         acquireAcceptingSession();
@@ -1227,7 +1276,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReplayAMixOfEngineAndLibraryMessages()
     {
         // Engine messages
@@ -1263,7 +1313,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         testSystem.awaitNotReplaying(acceptingSession);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReplayCurrentMessages()
     {
         final long sessionId = acceptingHandler.awaitSessionId(testSystem::poll);
@@ -1278,7 +1329,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
 
         assertEquals(INITIATOR_ID, acceptingHandler.lastInitiatorCompId());
         assertEquals(ACCEPTOR_ID, acceptingHandler.lastAcceptorCompId());
-        assertNotNull("unable to acquire accepting session", acceptingSession);
+        assertNotNull(acceptingSession, "unable to acquire accepting session");
 
         final List<FixMessage> replayedMessages = acceptingOtfAcceptor.messages();
         assertThat(replayedMessages, hasSize(1));
@@ -1287,13 +1338,15 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         messagesCanBeExchanged();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldWipePasswordsFromLogs()
     {
         assertArchiveDoesNotContainPassword();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldHandleUserRequestMessages()
     {
         final String id = "A";
@@ -1327,7 +1380,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertArchiveDoesNotContainPassword();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReplayReceivedMessagesForSession()
     {
         acquireAcceptingSession();
@@ -1338,7 +1392,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertReplayReceivedMessages();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotifyOfMissingMessagesForReplayReceivedMessages()
     {
         acquireAcceptingSession();
@@ -1351,7 +1406,8 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
         assertThat(acceptingOtfAcceptor.messages(), hasSize(0));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotErrorWithDuplicateRequestSession()
     {
         // Slow indexer down a bit with the test request ids in order to make this race more predictable.
@@ -1365,7 +1421,7 @@ public class GatewayToGatewaySystemTest extends AbstractGatewayToGatewaySystemTe
             acceptingLibrary, sessionId, NO_MESSAGE_REPLAY, NO_MESSAGE_REPLAY, testSystem);
 
         testSystem.awaitReply(firstReply);
-        assertEquals(firstReply.toString(), OK, firstReply.resultIfPresent());
+        assertEquals(OK, firstReply.resultIfPresent(), firstReply.toString());
         assertEquals(SessionReplyStatus.OTHER_SESSION_OWNER, replyStatus);
     }
 

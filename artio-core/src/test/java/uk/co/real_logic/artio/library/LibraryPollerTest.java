@@ -20,8 +20,8 @@ import io.aeron.driver.DutyCycleTracker;
 import org.agrona.LangUtil;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.status.AtomicCounter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.stubbing.Answer;
@@ -42,8 +42,8 @@ import java.util.List;
 import static io.aeron.CommonContext.IPC_CHANNEL;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_REPLY_TIMEOUT_IN_MS;
 import static uk.co.real_logic.artio.LivenessDetector.SEND_INTERVAL_FRACTION;
@@ -84,7 +84,7 @@ public class LibraryPollerTest
 
     private LibraryPoller library;
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         when(transport.outboundPublication()).thenReturn(outboundPublication);
@@ -257,7 +257,7 @@ public class LibraryPollerTest
 
         pollTwice();
 
-        assertFalse("Library failed to timeout", library.isConnected());
+        assertFalse(library.isConnected(), "Library failed to timeout");
     }
 
     private void reconnectAfterTimeout()
@@ -266,7 +266,7 @@ public class LibraryPollerTest
 
         pollTwice();
 
-        assertTrue("Library still timed out", library.isConnected());
+        assertTrue(library.isConnected(), "Library still timed out");
     }
 
     private void advanceBeyondReplyTimeout()
@@ -305,7 +305,7 @@ public class LibraryPollerTest
 
         pollTwice();
 
-        assertTrue("Failed to connect", library.isConnected());
+        assertTrue(library.isConnected(), "Failed to connect");
     }
 
     private void receiveOneApplicationHeartbeat()

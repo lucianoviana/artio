@@ -17,8 +17,10 @@ package uk.co.real_logic.artio.system_tests;
 
 import io.aeron.archive.client.AeronArchive;
 import org.agrona.collections.Long2LongHashMap;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.DebugLogger;
 import uk.co.real_logic.artio.LogTag;
 import uk.co.real_logic.artio.MonitoringAgentFactory;
@@ -34,8 +36,8 @@ import static io.aeron.Aeron.NULL_VALUE;
 import static io.aeron.logbuffer.LogBufferDescriptor.TERM_MIN_LENGTH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.co.real_logic.artio.FixMatchers.hasSequenceIndex;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
@@ -44,7 +46,7 @@ public class ArchivePruneSystemTest extends AbstractGatewayToGatewaySystemTest
 {
     private boolean saveOnShutdownTesting = true;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         deleteLogs();
@@ -75,7 +77,8 @@ public class ArchivePruneSystemTest extends AbstractGatewayToGatewaySystemTest
         acceptingEngine = FixEngine.launch(acceptingConfig);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldPruneAwayOldArchivePositions()
     {
         setupSessionWithSegmentOfFiles();
@@ -85,7 +88,8 @@ public class ArchivePruneSystemTest extends AbstractGatewayToGatewaySystemTest
         assertPruneWorks(false, true);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldPruneAwayOldArchivePositionsWithFreeLibraryIds()
     {
         setupSessionWithSegmentOfFiles();
@@ -105,7 +109,8 @@ public class ArchivePruneSystemTest extends AbstractGatewayToGatewaySystemTest
         assertPruneWorks(false, false);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldPruneAwayOldArchivePositionsForFixEngineResetSequenceNumbers()
     {
         setupSessionWithSegmentOfFiles();
@@ -115,7 +120,8 @@ public class ArchivePruneSystemTest extends AbstractGatewayToGatewaySystemTest
         assertPruneWorks(true, true);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldPruneAwayOldArchivePositionsForSessionTrySendSequenceReset()
     {
         setupSessionWithSegmentOfFiles();
@@ -141,7 +147,8 @@ public class ArchivePruneSystemTest extends AbstractGatewayToGatewaySystemTest
             () -> sessionInfo.sequenceIndex() == sequenceIndex);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldPruneAwayOldArchivePositionsForSessionTryResetSequenceNumbers()
     {
         acquireAcceptingSession();
@@ -157,12 +164,13 @@ public class ArchivePruneSystemTest extends AbstractGatewayToGatewaySystemTest
         assertInitiatingSequenceIndexIs(1);
 
         final File file = RecordingCoordinator.recordingIdsFile(acceptingEngine.configuration());
-        assertTrue("Failed to create recording coordinator file", file.exists());
+        assertTrue(file.exists(), "Failed to create recording coordinator file");
 
         assertPruneWorks(false, true);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldPruneAwayOldArchivePositionsForSessionTryResetSequenceNumbersProcessTerminated()
     {
         RecordingCoordinator.saveOnShutdownTesting(false);
@@ -218,7 +226,7 @@ public class ArchivePruneSystemTest extends AbstractGatewayToGatewaySystemTest
             closeAcceptingLibrary();
 
             final File file = RecordingCoordinator.recordingIdsFile(acceptingEngine.configuration());
-            assertTrue("Failed to create recording coordinator file", file.exists());
+            assertTrue(file.exists(), "Failed to create recording coordinator file");
 
             newAcceptingEngine(false);
             newAcceptingLibrary();

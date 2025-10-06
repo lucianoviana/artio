@@ -1,6 +1,6 @@
 package uk.co.real_logic.artio.system_tests;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.decoder.AbstractLogonDecoder;
 import uk.co.real_logic.artio.session.Session;
 import uk.co.real_logic.artio.validation.AuthenticationProxy;
@@ -9,7 +9,7 @@ import uk.co.real_logic.artio.validation.AuthenticationStrategy;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.system_tests.FixConnection.*;
 
 public class ProxyProtocolSystemTest extends AbstractMessageBasedAcceptorSystemTest

@@ -19,7 +19,7 @@ import org.agrona.ErrorHandler;
 import org.agrona.IoUtil;
 import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.FileSystemCorruptionException;
 import uk.co.real_logic.artio.builder.LogonEncoder;
 import uk.co.real_logic.artio.dictionary.FixDictionary;
@@ -44,8 +44,9 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_INITIAL_SEQUENCE_INDEX;
@@ -140,8 +141,8 @@ public class FixContextsTest
 
         final SessionContext cContext = fixContextsAfterRestart.onLogon(cSession, fixDictionary);
         assertValidSessionId(cContext.sessionId());
-        assertNotEquals("C is a duplicate of A", aContext, cContext);
-        assertNotEquals("C is a duplicate of B", bContext, cContext);
+        assertNotEquals(aContext, cContext, "C is a duplicate of A");
+        assertNotEquals(bContext, cContext, "C is a duplicate of B");
     }
 
     @Test
@@ -169,11 +170,14 @@ public class FixContextsTest
         verify(errorHandler).onError(any(FileSystemCorruptionException.class));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void validateSizeOfBuffer()
     {
-        final AtomicBuffer buffer = new UnsafeBuffer(ByteBuffer.allocate(1024));
-        newSessionContexts(buffer);
+        assertThrows(IllegalArgumentException.class, () ->
+        {
+            final AtomicBuffer buffer = new UnsafeBuffer(ByteBuffer.allocate(1024));
+            newSessionContexts(buffer);
+        });
     }
 
     @Test
@@ -336,8 +340,8 @@ public class FixContextsTest
         final SessionContext newAContext = fixContexts.onLogon(aSession, fixDictionary);
         assertValidSessionId(bContext.sessionId());
         assertValidSessionId(newAContext.sessionId());
-        assertEquals("Session Contexts haven't been reset", aContext, bContext);
-        assertNotEquals("Session Contexts haven't been reset", aContext, newAContext);
+        assertEquals(aContext, bContext, "Session Contexts haven't been reset");
+        assertNotEquals(aContext, newAContext, "Session Contexts haven't been reset");
     }
 
     private void assertValidSessionId(final long cId)

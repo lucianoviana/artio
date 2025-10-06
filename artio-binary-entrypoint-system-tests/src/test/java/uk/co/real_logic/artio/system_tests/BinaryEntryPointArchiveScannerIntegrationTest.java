@@ -19,7 +19,9 @@ import b3.entrypoint.fixp.sbe.*;
 import org.agrona.collections.IntArrayList;
 import org.agrona.collections.IntHashSet;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.engine.EngineConfiguration;
 
 import java.io.IOException;
@@ -32,7 +34,8 @@ public class BinaryEntryPointArchiveScannerIntegrationTest extends AbstractBinar
 {
     private boolean follow = false;
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void canScanArchiveWhilstGatewayRunningOneStream() throws IOException
     {
         setupAndExchangeMessages();
@@ -40,7 +43,8 @@ public class BinaryEntryPointArchiveScannerIntegrationTest extends AbstractBinar
         assertOutboundArchiveContainsMessages();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void canScanArchiveWhilstGatewayRunningBothStreams() throws IOException
     {
         setupAndExchangeMessages();
@@ -48,7 +52,8 @@ public class BinaryEntryPointArchiveScannerIntegrationTest extends AbstractBinar
         assertArchiveContainsBothMessages();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void canScanArchiveWhilstGatewayRunningBothStreamsFollowMode() throws IOException
     {
         follow = true;
@@ -58,7 +63,8 @@ public class BinaryEntryPointArchiveScannerIntegrationTest extends AbstractBinar
         assertArchiveContainsBothMessages();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void canScanArchiveWhenGatewayStoppedOneStream() throws IOException
     {
         setupAndExchangeMessages();
@@ -68,7 +74,8 @@ public class BinaryEntryPointArchiveScannerIntegrationTest extends AbstractBinar
         assertOutboundArchiveContainsMessages();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void canScanArchiveWhenGatewayStoppedBothStreams() throws IOException
     {
         setupAndExchangeMessages();

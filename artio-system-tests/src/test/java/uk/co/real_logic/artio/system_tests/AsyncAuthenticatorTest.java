@@ -16,9 +16,13 @@
 package uk.co.real_logic.artio.system_tests;
 
 import org.agrona.collections.IntHashSet;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.MonitoringAgentFactory;
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.builder.Encoder;
@@ -37,7 +41,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_INBOUND_LIBRARY_STREAM;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_OUTBOUND_LIBRARY_STREAM;
 import static uk.co.real_logic.artio.Constants.LOGON_MESSAGE_AS_STR;
@@ -54,7 +58,7 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
 
     private long initiateTimeoutInMs = TEST_REPLY_TIMEOUT_IN_MS;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         mediaDriver = launchMediaDriver();
@@ -76,7 +80,8 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         testSystem = new TestSystem(acceptingLibrary, initiatingLibrary);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldConnectedAcceptedAuthentications()
     {
         final Reply<Session> reply = acquireExecutingAuthProxy();
@@ -87,7 +92,8 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         assertInitiatingSequenceIndexIs(0);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToRejectLogons()
     {
         final Reply<Session> reply = acquireExecutingAuthProxy();
@@ -99,7 +105,8 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         assertOnlyLogonInArchive();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToRejectLogonsWithCustomMessages()
     {
         // We run this test twice to ensure that there's no state that persisted over reconnects
@@ -120,7 +127,8 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         assertRejectReply(entries.get(3));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToRejectLogonsWithCustomMessagesEarlyDisconnect()
     {
         // Perform an early disconnect from the initiator side
@@ -151,45 +159,55 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS, expected = NullPointerException.class)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void rejectWithEncoderMustProvideAnEncoder()
     {
-        acquireExecutingAuthProxy();
-
-        try
+        assertThrows(NullPointerException.class, () ->
         {
-            auth.reject(null, LINGER_TIMEOUT_IN_MS);
-        }
-        finally
-        {
-            // Test optimisation.
-            auth.reject();
-        }
+            acquireExecutingAuthProxy();
 
-        assertOnlyLogonInArchive();
+            try
+            {
+                auth.reject(null, LINGER_TIMEOUT_IN_MS);
+            }
+            finally
+            {
+                // Test optimisation.
+                auth.reject();
+            }
+
+            assertOnlyLogonInArchive();
+        });
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS, expected = IllegalArgumentException.class)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void lingerTimeoutShouldBeValid()
     {
-        acquireExecutingAuthProxy();
-
-        final RejectEncoder encoder = newRejectEncoder();
-
-        try
+        assertThrows(IllegalArgumentException.class, () ->
         {
-            auth.reject(encoder, -1);
-        }
-        finally
-        {
-            // Test optimisation.
-            auth.reject();
-        }
 
-        assertOnlyLogonInArchive();
+            acquireExecutingAuthProxy();
+
+            final RejectEncoder encoder = newRejectEncoder();
+
+            try
+            {
+                auth.reject(encoder, -1);
+            }
+            finally
+            {
+                // Test optimisation.
+                auth.reject();
+            }
+
+            assertOnlyLogonInArchive();
+        });
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void invalidEncoderShouldStillDisconnect()
     {
         final Reply<Session> reply = acquireExecutingAuthProxy();
@@ -203,7 +221,8 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         assertOnlyLogonInArchive();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldDisconnectSessionsWhenAuthStrategyFails()
     {
         auth.throwWhenInvoked = true;
@@ -215,7 +234,8 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         assertOnlyLogonInArchive();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void messagesCanBeSentFromInitiatorToAcceptorAfterRejectedAuthenticationAttempt()
     {
         final Reply<Session> invalidReply = acquireExecutingAuthProxy();
@@ -234,7 +254,8 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         assertInitiatingSequenceIndexIs(1);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldOnlyUseFirstMethodCall()
     {
         final Reply<Session> reply = acquireExecutingAuthProxy();
@@ -259,7 +280,8 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         scanArchiveForEntries(4);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldDisconnectPendingAuthenticationAfterTimeout()
     {
         final long start = System.currentTimeMillis();
@@ -270,40 +292,45 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         assertThat(duration, is(lessThan(TEST_REPLY_TIMEOUT_IN_MS)));
     }
 
-    @After
+    @AfterEach
     public void teardown()
     {
         auth.verifyNoBlockingCalls();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotifyAuthStrategyUponAcceptorLogoff()
     {
         // can be either logout or remote disconnect
         notifyAuthStrategyUpon(this::logoutAcceptingSession, null);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotifyAuthStrategyUponInitiatorLogoff()
     {
         notifyAuthStrategyUpon(this::logoutInitiatingSession, DisconnectReason.LOGOUT);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotifyAuthStrategyUponAcceptorDisconnect()
     {
         notifyAuthStrategyUpon(
             () -> testSystem.awaitRequestDisconnect(acceptingSession), DisconnectReason.APPLICATION_DISCONNECT);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotifyAuthStrategyUponInitiatorDisconnect()
     {
         notifyAuthStrategyUpon(
             () -> testSystem.awaitRequestDisconnect(initiatingSession), DisconnectReason.REMOTE_DISCONNECT);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void rejectMessagesCanBeScannedInLogs()
     {
         final Reply<Session> invalidReply = acquireExecutingAuthProxy();
@@ -339,7 +366,7 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
 
     private void assertRejectReply(final ArchiveEntry reply)
     {
-        assertEquals(reply.toString(), MessageStatus.OK, reply.status());
+        assertEquals(MessageStatus.OK, reply.status(), reply.toString());
         assertThat(reply.body(), containsString("35=3\00149=acceptor"));
         assertThat(reply.body(), containsString("372=A\00158=Invalid Logon"));
     }
@@ -384,7 +411,7 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
         testSystem.awaitReply(reply);
         if (acceptorDisconnect)
         {
-            assertEquals(reply.toString(), Reply.State.ERRORED, reply.state());
+            assertEquals(Reply.State.ERRORED, reply.state(), reply.toString());
             assertThat(reply.error().getMessage(),
                 containsString("UNABLE_TO_LOGON: Disconnected before session active"));
         }
@@ -394,7 +421,7 @@ public class AsyncAuthenticatorTest extends AbstractGatewayToGatewaySystemTest
     {
         final Reply<Session> reply = acquireAuthProxy();
 
-        assertEquals(reply.toString(), Reply.State.EXECUTING, reply.state());
+        assertEquals(Reply.State.EXECUTING, reply.state(), reply.toString());
 
         return reply;
     }
