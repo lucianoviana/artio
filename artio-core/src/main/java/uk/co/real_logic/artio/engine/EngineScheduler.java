@@ -65,7 +65,7 @@ public interface EngineScheduler extends AutoCloseable
         throw new IllegalStateException("Cannot re-use scheduler for multiple launch attempts");
     }
 
-    static void awaitRunnerStart(AgentRunner runner)
+    static void awaitRunnerStart(final AgentRunner runner)
     {
         if (runner != null)
         {

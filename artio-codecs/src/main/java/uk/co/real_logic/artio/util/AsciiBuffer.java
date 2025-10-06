@@ -76,9 +76,9 @@ public interface AsciiBuffer extends DirectBuffer
         DecimalFloatOverflowHandler decimalFloatOverflowHandler);
 
     default DecimalFloat getFloat(
-        DecimalFloat number,
-        int offset,
-        int length)
+        final DecimalFloat number,
+        final int offset,
+        final int length)
     {
         return getFloat(number, offset, length, -1, null);
     }

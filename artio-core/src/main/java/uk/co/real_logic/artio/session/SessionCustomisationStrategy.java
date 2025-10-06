@@ -55,7 +55,7 @@ public interface SessionCustomisationStrategy
      * @param header the header about to be sent
      * @param sessionId the surrogate id for the Session that is being customised
      */
-    default void configureHeader(SessionHeaderEncoder header, long sessionId)
+    default void configureHeader(final SessionHeaderEncoder header, final long sessionId)
     {
     }
 }

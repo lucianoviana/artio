@@ -1,8 +1,8 @@
 [versions]
-aeron = "1.48.5"
-agrona = "2.2.4"
-byteBuddy = "1.17.6"
-checkstyle = "10.26.0"
+aeron = "1.49.0"
+agrona = "2.3.0"
+byteBuddy = "1.17.7"
+checkstyle = "11.1.0"
 commons-codec = "1.15"
 commons-lang3 = "3.8.1"
 hamcrest = "3.0"
@@ -12,11 +12,11 @@ jmh = "1.37"
 json = "20250517"
 junit = "5.13.2"
 junit4 = "4.13.2"
-mockito = "5.18.0"
+mockito = "5.20.0"
 plexus = "3.3.0"
-sbe = "1.35.6"
+sbe = "1.36.0"
 shadow = "8.3.7"
-versions = "0.52.0"
+versions = "0.53.0"
 
 [libraries]
 agrona = { group = "org.agrona", name = "agrona", version.ref = "agrona" }
