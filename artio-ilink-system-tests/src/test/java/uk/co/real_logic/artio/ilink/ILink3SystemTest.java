@@ -227,8 +227,7 @@ public class ILink3SystemTest
         shouldEstablishConnectionAtBeginningOfWeek();
 
         abortNewOrderSingle();
-        assertEquals("Sequence number has been incorrectly updated for aborted message",
-            1, connection.nextSentSeqNo());
+        assertEquals(1, connection.nextSentSeqNo(), "Sequence number has been incorrectly updated for aborted message");
 
         sendNewOrderSingle();
 

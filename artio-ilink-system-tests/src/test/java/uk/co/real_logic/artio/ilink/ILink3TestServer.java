@@ -295,7 +295,7 @@ public class ILink3TestServer
         // TradingSystemInfo
 
         final long uuid = establish.uUID();
-        assertEquals("Incorrect establish uuid", this.uuid, uuid);
+        assertEquals(this.uuid, uuid, "Incorrect establish uuid");
 
         establishRequestTimestamp = establish.requestTimestamp();
         assertThat(establishRequestTimestamp, greaterThanOrEqualTo(negotiateRequestTimestamp));
@@ -622,11 +622,11 @@ public class ILink3TestServer
     public long readRetransmitRequest(final long fromSeqNo, final int msgCount, final long lastUUID)
     {
         final RetransmitRequest508Decoder retransmitRequest = read(new RetransmitRequest508Decoder(), 0);
-        assertEquals("uuid", uuid, retransmitRequest.uUID());
-        assertEquals("lastUUID", lastUUID, retransmitRequest.lastUUID());
+        assertEquals(uuid, retransmitRequest.uUID(), "uuid");
+        assertEquals(lastUUID, retransmitRequest.lastUUID(), "lastUUID");
         final long requestTimestamp = retransmitRequest.requestTimestamp();
-        assertEquals("fromSeqNo", fromSeqNo, retransmitRequest.fromSeqNo());
-        assertEquals("msgCount", msgCount, retransmitRequest.msgCount());
+        assertEquals(fromSeqNo, retransmitRequest.fromSeqNo(), "fromSeqNo");
+        assertEquals(msgCount, retransmitRequest.msgCount(), "msgCount");
 
         return requestTimestamp;
     }

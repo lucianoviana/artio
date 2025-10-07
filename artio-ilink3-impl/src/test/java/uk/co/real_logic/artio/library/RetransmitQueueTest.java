@@ -243,14 +243,14 @@ public class RetransmitQueueTest
 
         expectedRetransmitQueueSize = 492;
 
-        assertFalse("Wrong retransmitTimedOut", handler.retransmitTimedOut());
+        assertFalse(handler.retransmitTimedOut(), "Wrong retransmitTimedOut");
         nanoTime += MILLISECONDS.toNanos(DEFAULT_RETRANSMIT_TIMEOUT_IN_MS) + 1;
         connection.poll(NANOSECONDS.toMillis(nanoTime));
-        assertTrue("Wrong retransmitTimedOut", handler.retransmitTimedOut());
+        assertTrue(handler.retransmitTimedOut(), "Wrong retransmitTimedOut");
         handler.resetRetransmitTimedOut();
 
         connection.poll(NANOSECONDS.toMillis(nanoTime));
-        assertFalse("retransmitTimedOut called again unnecessarily", handler.retransmitTimedOut());
+        assertFalse(handler.retransmitTimedOut(), "retransmitTimedOut called again unnecessarily");
 
         handler.resetRetransmitTimedOut();
     }
@@ -463,8 +463,8 @@ public class RetransmitQueueTest
 
     private void assertSeqNos(final long nextRecvSeqNo, final long retransmitFillSeqNo)
     {
-        assertEquals("wrong nextRecvSeqNo", nextRecvSeqNo, connection.nextRecvSeqNo());
-        assertEquals("wrong retransmitFillSeqNo", retransmitFillSeqNo, connection.retransmitFillSeqNo());
+        assertEquals(nextRecvSeqNo, connection.nextRecvSeqNo(), "wrong nextRecvSeqNo");
+        assertEquals(retransmitFillSeqNo, connection.retransmitFillSeqNo(), "wrong retransmitFillSeqNo");
     }
 
     private void onExecutionReport(final long sequenceNumber, final boolean possRetrans)
