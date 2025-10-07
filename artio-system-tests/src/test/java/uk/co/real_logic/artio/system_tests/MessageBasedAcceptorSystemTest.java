@@ -17,7 +17,8 @@ package uk.co.real_logic.artio.system_tests;
 
 import org.agrona.concurrent.status.ReadablePosition;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentMatchers;
 import uk.co.real_logic.artio.*;
 import uk.co.real_logic.artio.builder.*;
@@ -47,7 +48,7 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.agrona.CloseHelper.close;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_REPLY_TIMEOUT_IN_MS;
 import static uk.co.real_logic.artio.Constants.EXECUTION_REPORT_MESSAGE_AS_STR;
@@ -74,14 +75,16 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
     private final int timeoutDisconnectHeartBtIntInS = 1;
     private final long timeoutDisconnectHeartBtIntInMs = TimeUnit.SECONDS.toMillis(timeoutDisconnectHeartBtIntInS);
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldComplyWithLogonBasedSequenceNumberResetOn()
         throws IOException
     {
         shouldComplyWithLogonBasedSequenceNumberReset(true);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldComplyWithLogonBasedSequenceNumberResetOff()
         throws IOException
     {
@@ -98,7 +101,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         logonThenLogout();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotNotifyLibraryOfSessionUntilLoggedOn() throws IOException
     {
         setup(true, true);
@@ -120,7 +124,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRejectExceptionalLogonMessageAndLogout() throws IOException
     {
         setup(true, true);
@@ -138,7 +143,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRejectExceptionalSessionMessage() throws IOException
     {
         setup(true, true);
@@ -157,7 +163,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldShutdownWithNotLoggedInSessionsOpen() throws IOException
     {
         setup(true, true);
@@ -168,19 +175,22 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldDisconnectConnectionWithNoLogonEngine() throws IOException
     {
         shouldDisconnectConnectionWithNoLogon(ENGINE);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldDisconnectConnectionWithNoLogonSoleLibrary() throws IOException
     {
         shouldDisconnectConnectionWithNoLogon(SOLE_LIBRARY);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldDisconnectConnectionWithNoLogoutReply() throws IOException
     {
         setup(true, true);
@@ -202,7 +212,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportRapidLogonAndLogoutOperations() throws IOException
     {
         setup(false, true, true);
@@ -252,7 +263,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRejectMessageWithInvalidSenderAndTargetCompIds() throws IOException
     {
         setup(true, true);
@@ -287,7 +299,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRejectInvalidResendRequestsWrongCompId() throws IOException
     {
         setup(true, true);
@@ -312,11 +325,12 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             sleep(200);
 
             connection.logout();
-            assertFalse("Read a resent FIX message instead of a disconnect", connection.isConnected());
+            assertFalse(connection.isConnected(), "Read a resent FIX message instead of a disconnect");
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRejectInvalidResendRequestsHighBeginSeqNo() throws IOException
     {
         shouldRejectInvalidResendRequests((connection, reportSeqNum) ->
@@ -326,7 +340,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         });
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRejectInvalidResendRequestsEndSeqNoBelowBeginSeqNo() throws IOException
     {
         shouldRejectInvalidResendRequests((connection, reportSeqNum) ->
@@ -365,12 +380,13 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
                 connection.logout();
                 connection.readLogout();
-                assertFalse("Read a resent FIX message instead of a disconnect", connection.isConnected());
+                assertFalse(connection.isConnected(), "Read a resent FIX message instead of a disconnect");
             });
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReplyWithOnlyValidMessageSequenceWithHighEndSeqNo() throws IOException
     {
         setup(true, true);
@@ -400,7 +416,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
                 final SequenceResetDecoder sequenceResetDecoder = connection.readMessage(new SequenceResetDecoder());
                 assertTrue(sequenceResetDecoder.header().possDupFlag());
-                assertEquals(connection.lastMessageAsString(), reportSeqNum, sequenceResetDecoder.newSeqNo());
+                assertEquals(reportSeqNum, sequenceResetDecoder.newSeqNo(), connection.lastMessageAsString());
                 final ExecutionReportDecoder secondExecutionReport = connection.readExecutionReport();
                 assertTrue(secondExecutionReport.header().possDupFlag());
                 assertEquals(reportSeqNum, secondExecutionReport.header().msgSeqNum());
@@ -413,12 +429,13 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
                 connection.logout();
                 connection.readLogout();
-                assertFalse("Read a resent FIX message instead of a disconnect", connection.isConnected());
+                assertFalse(connection.isConnected(), "Read a resent FIX message instead of a disconnect");
             });
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRejectInvalidLogonWithMissingTargetCompId()
     {
         setup(true, true, true, SOLE_LIBRARY);
@@ -466,7 +483,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         assertThat("sessions = " + sessions, sessions, hasSize(0));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRejectMessagesOverThrottle() throws IOException
     {
         setup(true, true, true, ENGINE, true);
@@ -496,7 +514,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             session = acquireSession();
             final Reply<ThrottleConfigurationStatus> reply = testSystem.awaitCompletedReply(session.throttleMessagesAt(
                 TEST_THROTTLE_WINDOW_IN_MS, RESET_THROTTLE_MSG_LIMIT));
-            assertEquals(reply.toString(), OK, reply.resultIfPresent());
+            assertEquals(OK, reply.resultIfPresent(), reply.toString());
 
             testSystem.awaitBlocking(() ->
             {
@@ -511,7 +529,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldAnswerResendRequestWithHighSeqNum() throws IOException
     {
         setup(true, true);
@@ -539,7 +558,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportLogonBasedSequenceNumberResetWithImmediateMessageSend() throws IOException
     {
         shouldSupportLogonBasedSequenceNumberReset(true, ENGINE, (connection, reportFactory) ->
@@ -553,7 +573,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         });
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportLogonBasedSequenceNumberResetWithImmediateMessageSendAndDisconnect() throws IOException
     {
         shouldSupportLogonBasedSequenceNumberReset(false, SOLE_LIBRARY, (connection, reportFactory) ->
@@ -571,7 +592,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportLogonBasedSequenceNumberResetWithLowSequenceNumberReconnect() throws IOException
     {
         shouldSupportLogonBasedSequenceNumberReset(true, SOLE_LIBRARY, (connection, reportFactory) ->
@@ -591,7 +613,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportLogonBasedSequenceNumberResetWithMessagesSentBeforeLogonResponse() throws IOException
     {
         shouldSupportLogonBasedSequenceNumberReset(false, SOLE_LIBRARY, (connection, reportFactory) ->
@@ -617,7 +640,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         });
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldHandleOnlineResetFollowedByDisconnectAndRestart() throws IOException
     {
         final int erSeqNum;
@@ -668,7 +692,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportReplayingReceivedMessagesWithDifferentFromAndToSequenceIndices() throws IOException
     {
         shouldSupportLogonBasedSequenceNumberReset(true, ENGINE, (connection, reportFactory) ->
@@ -686,7 +711,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         });
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldFilterCatchupReplayMessagesWhenRequestingSession() throws IOException
     {
         setup(false, true);
@@ -710,7 +736,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldGracefullyHandleExceptionsInOnSessionStart() throws IOException
     {
         setup(true, true, true, SOLE_LIBRARY);
@@ -736,7 +763,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         verify(errorHandler).onError(ArgumentMatchers.any(RuntimeException.class));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSendLogoutOnTimeoutDisconnect() throws IOException
     {
         reasonableTransmissionTimeInMs = 1;
@@ -753,7 +781,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSendLogoutOnTimeoutDisconnectSoleLibrary() throws IOException
     {
         reasonableTransmissionTimeInMs = 1;
@@ -808,7 +837,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             Matchers.lessThan(timeoutDisconnectHeartBtIntInMs));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotAllowRequestingOfUnknownSession() throws IOException
     {
         setup(true, true);
@@ -823,7 +853,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportResendRequestsAfterSequenceReset() throws IOException
     {
         setup(true, true);
@@ -854,7 +885,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
             testSystem.awaitBlocking(() ->
             {
                 final SequenceResetDecoder sequenceReset = connection.readSequenceReset();
-                assertFalse(sequenceReset.toString(), sequenceReset.hasGapFillFlag());
+                assertFalse(sequenceReset.hasGapFillFlag(), sequenceReset.toString());
                 assertEquals(highSeqNum, sequenceReset.newSeqNo());
             });
 
@@ -872,7 +903,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportResendRequestsAfterOfflineSequenceReset() throws Exception
     {
         printErrors = true;
@@ -935,7 +967,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldDisconnectConnectionTryingToSendOversizedMessage() throws IOException
     {
         setup(true, true);
@@ -956,7 +989,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldInvalidateMessageWithInvalidMsgType() throws IOException
     {
         setup(true, true);
@@ -1021,7 +1055,8 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         return Arrays.copyOfRange(buffer, startIndex, index);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSupportFollowerSessionLogonWithoutSequenceResetOnDisconnectBeforeLibraryLogonResponse()
         throws IOException
     {
@@ -1089,7 +1124,7 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
 
     private void assertSell(final ExecutionReportDecoder executionReport)
     {
-        assertEquals(executionReport.toString(), Side.SELL, executionReport.sideAsEnum());
+        assertEquals(Side.SELL, executionReport.sideAsEnum(), executionReport.toString());
     }
 
     private void shouldSupportLogonBasedSequenceNumberReset(
@@ -1179,9 +1214,9 @@ public class MessageBasedAcceptorSystemTest extends AbstractMessageBasedAcceptor
         assertEquals(INITIATOR_ID, header.targetCompIDAsString());
         assertEquals(possDup, header.hasPossDupFlag() && header.possDupFlag());
 
-        assertEquals("wrong businessRejectReason", 99, reject.businessRejectReason());
+        assertEquals(99, reject.businessRejectReason(), "wrong businessRejectReason");
         assertEquals("8", reject.refMsgTypeAsString());
-        assertEquals("wrong refSeqNum", refSeqNum, reject.refSeqNum());
+        assertEquals(refSeqNum, reject.refSeqNum(), "wrong refSeqNum");
         assertEquals("Throttle limit exceeded (" + limitOfMessages + " in 300ms)",
             reject.textAsString());
     }

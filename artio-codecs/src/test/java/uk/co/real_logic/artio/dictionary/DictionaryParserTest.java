@@ -16,8 +16,8 @@
 package uk.co.real_logic.artio.dictionary;
 
 import org.hamcrest.Matcher;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.dictionary.ir.*;
 import uk.co.real_logic.artio.dictionary.ir.Field.Type;
 import uk.co.real_logic.artio.dictionary.ir.Field.Value;
@@ -27,7 +27,7 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.dictionary.ir.Field.Type.INT;
 import static uk.co.real_logic.artio.dictionary.ir.Field.Type.STRING;
 import static uk.co.real_logic.artio.util.CustomMatchers.hasFluentProperty;
@@ -38,7 +38,7 @@ public class DictionaryParserTest
 
     private static Dictionary dictionary;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception
     {
         dictionary = parseExample();
@@ -55,10 +55,10 @@ public class DictionaryParserTest
     @Test
     public void shouldParseExampleDictionary()
     {
-        assertNotNull("Missing dictionary", dictionary);
-        assertNotNull("Missing messages", dictionary.messages());
-        assertNotNull("Missing fields", dictionary.fields());
-        assertNotNull("Missing components", dictionary.components());
+        assertNotNull(dictionary, "Missing dictionary");
+        assertNotNull(dictionary.messages(), "Missing messages");
+        assertNotNull(dictionary.fields(), "Missing fields");
+        assertNotNull(dictionary.components(), "Missing components");
     }
 
     @Test
@@ -66,7 +66,7 @@ public class DictionaryParserTest
     {
         final Field bodyLength = field("BodyLength");
 
-        assertNotNull("Hasn't found BodyLength", bodyLength);
+        assertNotNull(bodyLength, "Hasn't found BodyLength");
         assertEquals("BodyLength", bodyLength.name());
         assertEquals(9, bodyLength.number());
         assertEquals(Type.INT, bodyLength.type());
@@ -95,7 +95,7 @@ public class DictionaryParserTest
     {
         final Field msgType = field("MsgType");
 
-        assertNotNull("Hasn't found MsgType", msgType);
+        assertNotNull(msgType, "Hasn't found MsgType");
         assertEquals("MsgType", msgType.name());
         assertEquals(35, msgType.number());
         assertEquals(STRING, msgType.type());
@@ -112,7 +112,7 @@ public class DictionaryParserTest
     {
         final Field msgType = field("ClearingFeeIndicator");
 
-        assertNotNull("Hasn't found ClearingFeeIndicator", msgType);
+        assertNotNull(msgType, "Hasn't found ClearingFeeIndicator");
         assertEquals("ClearingFeeIndicator", msgType.name());
         assertEquals(635, msgType.number());
         assertEquals(STRING, msgType.type());
@@ -133,7 +133,7 @@ public class DictionaryParserTest
     {
         final Field msgType = field("TrdRegPublicationType");
 
-        assertNotNull("Hasn't found TrdRegPublicationType", msgType);
+        assertNotNull(msgType, "Hasn't found TrdRegPublicationType");
         assertEquals("TrdRegPublicationType", msgType.name());
         assertEquals(2669, msgType.number());
         assertEquals(INT, msgType.type());

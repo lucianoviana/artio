@@ -17,7 +17,7 @@ package uk.co.real_logic.artio.session;
 
 import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.decoder.HeaderDecoder;
 import uk.co.real_logic.artio.decoder.SessionHeaderDecoder;
 
@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.co.real_logic.artio.dictionary.SessionConstants.*;

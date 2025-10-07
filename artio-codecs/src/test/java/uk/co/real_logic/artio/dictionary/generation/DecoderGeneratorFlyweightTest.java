@@ -16,18 +16,18 @@
 package uk.co.real_logic.artio.dictionary.generation;
 
 import org.agrona.AsciiSequenceView;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.builder.Decoder;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.dictionary.ExampleDictionary.*;
 import static uk.co.real_logic.artio.util.CustomMatchers.assertTargetThrows;
 import static uk.co.real_logic.artio.util.Reflection.getAsciiSequenceView;
 
 public class DecoderGeneratorFlyweightTest extends AbstractDecoderGeneratorTest
 {
-    @BeforeClass
+    @BeforeAll
     public static void generate() throws Exception
     {
         generate(true);

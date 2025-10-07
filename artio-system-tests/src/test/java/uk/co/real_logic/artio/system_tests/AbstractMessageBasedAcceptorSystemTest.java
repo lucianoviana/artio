@@ -20,7 +20,9 @@ import org.agrona.CloseHelper;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.OffsetEpochNanoClock;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
+
+
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.MonitoringAgentFactory;
 import uk.co.real_logic.artio.decoder.LogonDecoder;
@@ -39,8 +41,8 @@ import java.util.function.Function;
 
 import static io.aeron.CommonContext.IPC_CHANNEL;
 import static org.agrona.CloseHelper.close;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static uk.co.real_logic.artio.TestFixtures.*;
@@ -248,7 +250,7 @@ public class AbstractMessageBasedAcceptorSystemTest
         return session;
     }
 
-    @After
+    @AfterEach
     public void tearDown()
     {
         teardownArtio();

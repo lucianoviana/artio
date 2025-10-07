@@ -1,8 +1,10 @@
 package uk.co.real_logic.artio.system_tests;
 
 import org.agrona.concurrent.status.ReadablePosition;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.OrdType;
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.Side;
@@ -20,20 +22,21 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.library.FixLibrary.NO_MESSAGE_REPLAY;
 import static uk.co.real_logic.artio.library.SessionConfiguration.AUTOMATIC_INITIAL_SEQUENCE_NUMBER;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 import static uk.co.real_logic.artio.validation.SessionPersistenceStrategy.alwaysPersistent;
 
-@Ignore
+@Disabled
 public class ResettingAndPruningTest extends AbstractGatewayToGatewaySystemTest
 {
     private long resetPosition = 0;
 
-    @Test(timeout = 50_000)
+    @Test
+    @Timeout(50_000)
     public void shouldLogOnWithBothSeqNumsReset()
     {
         launch();
@@ -77,7 +80,8 @@ public class ResettingAndPruningTest extends AbstractGatewayToGatewaySystemTest
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldPurgeSegmentsBeforeLastReset()
     {
         // Test a reproduction of a spotted bug, performing a pruneArchive() twice caused the first index positions
@@ -110,7 +114,8 @@ public class ResettingAndPruningTest extends AbstractGatewayToGatewaySystemTest
         assertThat(segments3 + " < " + segments2, segments3.size(), lessThan(segments2.size()));
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldPurgeSegmentsBeforeLastResetWhilstSessionConnected()
     {
         // Test a reproduction of a spotted bug, performing a pruneArchive() twice caused the first index positions
@@ -168,7 +173,7 @@ public class ResettingAndPruningTest extends AbstractGatewayToGatewaySystemTest
     {
         final Reply<Session> reply =
             connectPersistentSessions(AUTOMATIC_INITIAL_SEQUENCE_NUMBER, AUTOMATIC_INITIAL_SEQUENCE_NUMBER, false);
-        assertEquals("Reply failed: " + reply, Reply.State.COMPLETED, reply.state());
+        assertEquals(Reply.State.COMPLETED, reply.state(), "Reply failed: " + reply);
         initiatingSession = reply.resultIfPresent();
         assertConnected(initiatingSession);
     }

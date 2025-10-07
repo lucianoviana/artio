@@ -15,9 +15,13 @@
  */
 package uk.co.real_logic.artio.system_tests;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.engine.FixEngine;
 import uk.co.real_logic.artio.library.SessionConfiguration;
@@ -29,7 +33,7 @@ import java.net.ServerSocket;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.Reply.State.ERRORED;
 import static uk.co.real_logic.artio.Reply.State.TIMED_OUT;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
@@ -60,7 +64,7 @@ public class InitiatingEngineNoLogonConnectionTest extends AbstractGatewayToGate
             });
     }
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         deleteLogs();
@@ -74,7 +78,7 @@ public class InitiatingEngineNoLogonConnectionTest extends AbstractGatewayToGate
         serverThread.start();
     }
 
-    @After
+    @AfterEach
     public void stopServerThread() throws Exception
     {
         serverSocket.close();
@@ -84,7 +88,8 @@ public class InitiatingEngineNoLogonConnectionTest extends AbstractGatewayToGate
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldTimeoutWhenConnectingToUnresponsiveEngine()
     {
         final Reply<Session> secondConnectReply = initiateSession();

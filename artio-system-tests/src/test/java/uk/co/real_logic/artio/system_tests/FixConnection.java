@@ -37,7 +37,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.LogTag.FIX_TEST;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
 
@@ -381,7 +381,7 @@ public final class FixConnection implements AutoCloseable
                 final String expectedMsgType = (String)messageTypeAsStringField.get(null);
                 final SessionHeaderDecoder header = decoder.header();
                 final String actualMsgType = new String(header.msgType(), 0, header.msgTypeLength());
-                assertEquals("MsgType", expectedMsgType, actualMsgType);
+                assertEquals(expectedMsgType, actualMsgType, "MsgType");
             }
             catch (final NoSuchFieldException | IllegalAccessException e)
             {
@@ -489,9 +489,9 @@ public final class FixConnection implements AutoCloseable
     {
         final SequenceResetDecoder sequenceReset = readSequenceReset();
         final String msg = sequenceReset.toString();
-        assertTrue(msg, sequenceReset.header().possDupFlag());
-        assertTrue(msg, sequenceReset.hasGapFillFlag());
-        assertEquals(msg, newSeqNo, sequenceReset.newSeqNo());
+        assertTrue(sequenceReset.header().possDupFlag(), msg);
+        assertTrue(sequenceReset.hasGapFillFlag(), msg);
+        assertEquals(newSeqNo, sequenceReset.newSeqNo(), msg);
         return sequenceReset;
     }
 
@@ -504,7 +504,7 @@ public final class FixConnection implements AutoCloseable
 
     private void assertSeqNum(final int msgSeqNum, final Decoder decoder)
     {
-        assertEquals(decoder.toString(), msgSeqNum, decoder.header().msgSeqNum());
+        assertEquals(msgSeqNum, decoder.header().msgSeqNum(), decoder.toString());
     }
 
     public RejectDecoder readReject()
@@ -520,8 +520,8 @@ public final class FixConnection implements AutoCloseable
     public ResendRequestDecoder readResendRequest(final int beginSeqNo, final int endSeqNo)
     {
         final ResendRequestDecoder resendRequest = readMessage(new ResendRequestDecoder());
-        assertEquals(resendRequest.toString(), beginSeqNo, resendRequest.beginSeqNo());
-        assertEquals(resendRequest.toString(), endSeqNo, resendRequest.endSeqNo());
+        assertEquals(beginSeqNo, resendRequest.beginSeqNo(), resendRequest.toString());
+        assertEquals(endSeqNo, resendRequest.endSeqNo(), resendRequest.toString());
         return resendRequest;
     }
 
@@ -547,8 +547,8 @@ public final class FixConnection implements AutoCloseable
     {
         final HeartbeatDecoder heartbeat = readHeartbeat();
         final String message = lastMessageAsString();
-        assertTrue(message, heartbeat.hasTestReqID());
-        assertEquals(message, testReqID, heartbeat.testReqIDAsString());
+        assertTrue(heartbeat.hasTestReqID(), message);
+        assertEquals(testReqID, heartbeat.testReqIDAsString(), message);
         return heartbeat;
     }
 
@@ -582,7 +582,7 @@ public final class FixConnection implements AutoCloseable
         logout();
 
         final LogoutDecoder logout = readLogout();
-        assertFalse(logout.textAsString(), logout.hasText());
+        assertFalse(logout.hasText(), logout.textAsString());
 
         return logout;
     }

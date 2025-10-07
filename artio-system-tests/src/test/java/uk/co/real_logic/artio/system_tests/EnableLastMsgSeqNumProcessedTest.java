@@ -1,7 +1,9 @@
 package uk.co.real_logic.artio.system_tests;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
 import uk.co.real_logic.artio.engine.FixEngine;
@@ -9,7 +11,7 @@ import uk.co.real_logic.artio.library.LibraryConfiguration;
 import uk.co.real_logic.artio.library.SessionConfiguration;
 import uk.co.real_logic.artio.session.Session;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.Constants.LOGOUT_MESSAGE_AS_STR;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
@@ -17,7 +19,7 @@ import static uk.co.real_logic.artio.validation.SessionPersistenceStrategy.alway
 
 public class EnableLastMsgSeqNumProcessedTest extends AbstractGatewayToGatewaySystemTest
 {
-    @Before
+    @BeforeEach
     public void launch()
     {
         mediaDriver = launchMediaDriver();
@@ -54,7 +56,8 @@ public class EnableLastMsgSeqNumProcessedTest extends AbstractGatewayToGatewaySy
         return initiatingLibrary.initiate(config);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void lastMsgSeqNumProcessedUpdatedByEngine()
     {
         messagesCanBeExchanged();
@@ -64,7 +67,8 @@ public class EnableLastMsgSeqNumProcessedTest extends AbstractGatewayToGatewaySy
         assertLastInitiatorReceivedMsgSeqNumProcessed(2);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void lastMsgSeqNumProcessedUpdatedByLibrary()
     {
         acquireAcceptingSession();
@@ -77,7 +81,8 @@ public class EnableLastMsgSeqNumProcessedTest extends AbstractGatewayToGatewaySy
         assertEquals(2, acceptingOtfAcceptor.lastReceivedMsgSeqNumProcessed());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void lastMsgSeqNumProcessedCorrectInLowSequenceNumberLogout()
     {
         messagesCanBeExchanged();

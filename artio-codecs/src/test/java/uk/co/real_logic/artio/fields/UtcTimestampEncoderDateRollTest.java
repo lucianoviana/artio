@@ -15,9 +15,9 @@
  */
 package uk.co.real_logic.artio.fields;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -35,7 +35,7 @@ public class UtcTimestampEncoderDateRollTest
         final String newTimestamp = "20150915-00:01:23.456";
         final int length = encoder.update(toEpochMillis(newTimestamp));
 
-        assertEquals("encoded wrong length", newTimestamp.length(), length);
+        assertEquals(newTimestamp.length(), length, "encoded wrong length");
         assertEquals(newTimestamp, new String(encoder.buffer(), 0, length, US_ASCII));
     }
 
@@ -48,7 +48,7 @@ public class UtcTimestampEncoderDateRollTest
         final String newTimestamp = "20150915-00:00:00.000";
         final int length = encoder.update(toEpochMillis(newTimestamp));
 
-        assertEquals("encoded wrong length", newTimestamp.length(), length);
+        assertEquals(newTimestamp.length(), length, "encoded wrong length");
         assertEquals(newTimestamp, new String(encoder.buffer(), 0, length, US_ASCII));
     }
 

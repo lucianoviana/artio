@@ -33,9 +33,11 @@ import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.concurrent.YieldingIdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import uk.co.real_logic.artio.FileSystemCorruptionException;
@@ -54,7 +56,7 @@ import static io.aeron.CommonContext.IPC_CHANNEL;
 import static io.aeron.CommonContext.IPC_MEDIA;
 import static org.agrona.IoUtil.deleteIfExists;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -91,7 +93,7 @@ public class SequenceNumberIndexTest extends AbstractLogTest
     private Subscription subscription;
     private RecordingIdLookup recordingIdLookup;
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         mediaDriver = launchMediaDriver();
@@ -119,7 +121,7 @@ public class SequenceNumberIndexTest extends AbstractLogTest
         reader = new SequenceNumberIndexReader(inMemoryBuffer, errorHandler, recordingIdLookup, null);
     }
 
-    @After
+    @AfterEach
     public void tearDown()
     {
         CloseHelper.close(writer);

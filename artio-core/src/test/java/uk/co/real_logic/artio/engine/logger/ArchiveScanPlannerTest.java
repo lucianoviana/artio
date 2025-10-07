@@ -15,13 +15,13 @@
  */
 package uk.co.real_logic.artio.engine.logger;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.decoder.SessionHeaderDecoder;
 import uk.co.real_logic.artio.dictionary.FixDictionary;
 
 import java.util.function.Predicate;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.engine.logger.FixMessagePredicates.*;
 
 public class ArchiveScanPlannerTest

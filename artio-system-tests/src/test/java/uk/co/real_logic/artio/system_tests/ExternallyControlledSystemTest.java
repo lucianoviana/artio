@@ -17,8 +17,10 @@ package uk.co.real_logic.artio.system_tests;
 
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.EpochNanoClock;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.*;
 import uk.co.real_logic.artio.builder.*;
 import uk.co.real_logic.artio.dictionary.FixDictionary;
@@ -42,7 +44,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.Constants.LOGOUT_MESSAGE_AS_STR;
 import static uk.co.real_logic.artio.Reply.State.COMPLETED;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
@@ -71,7 +73,7 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
 
     private int sessionProxyRequests = 0;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         mediaDriver = launchMediaDriver();
@@ -91,7 +93,8 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         testSystem = new TestSystem(acceptingLibrary, initiatingLibrary);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldRoundTripMessagesViaExternalSystem()
     {
         connectSessions();
@@ -113,7 +116,8 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         assertEquals(0, fakeSessionProxy.sentResendRequests);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReconnectConnections()
     {
         shouldRoundTripMessagesViaExternalSystem();
@@ -133,7 +137,8 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         assertEquals(0, fakeSessionProxy.sentResendRequests);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToContinueProcessingAFollowersSession()
     {
         final SessionWriter sessionWriter = writeMessageWithFollowerSessionWriter();
@@ -157,7 +162,8 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         awaitMessageFromSessionWriter(secondNOSSeqNum, secondNOSSeqNum);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToAdjustSequenceNumbersFromTheControlSystem()
     {
         connectSessions();
@@ -177,7 +183,8 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         assertEquals(0, fakeSessionProxy.sentResendRequests);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveLogoutBeforeDisconnectInClusteredCaseInitiatorSentLogout()
     {
         connectSessions();
@@ -197,7 +204,8 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         assertEquals(LOGOUT_MESSAGE_AS_STR, lastInitRecvMsg.msgType());
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReceiveLogoutBeforeDisconnectInClusteredCaseAcceptorSentLogout()
     {
         connectSessions();
@@ -294,7 +302,7 @@ public class ExternallyControlledSystemTest extends AbstractGatewayToGatewaySyst
         final CompositeKey compositeKey = acceptingSession.compositeKey();
         assertEquals(INITIATOR_ID, compositeKey.remoteCompId());
         assertEquals(ACCEPTOR_ID, compositeKey.localCompId());
-        assertNotNull("unable to acquire accepting session", acceptingSession);
+        assertNotNull(acceptingSession, "unable to acquire accepting session");
     }
 
     private SessionProxy sessionProxyFactory(

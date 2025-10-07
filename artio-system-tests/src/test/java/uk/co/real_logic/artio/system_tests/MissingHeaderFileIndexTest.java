@@ -1,6 +1,8 @@
 package uk.co.real_logic.artio.system_tests;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.MonitoringAgentFactory;
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
@@ -11,7 +13,7 @@ import uk.co.real_logic.artio.messages.InitialAcceptedSessionOwner;
 import uk.co.real_logic.artio.messages.SessionReplyStatus;
 import uk.co.real_logic.artio.session.Session;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.TestFixtures.launchMediaDriver;
 import static uk.co.real_logic.artio.library.FixLibrary.NO_MESSAGE_REPLAY;
 import static uk.co.real_logic.artio.system_tests.SystemTestUtil.*;
@@ -24,7 +26,8 @@ public class MissingHeaderFileIndexTest extends AbstractGatewayToGatewaySystemTe
     // Test reproduces an issue where a missing header file can cause the archiver thread to go into a loop.
     // Caused by a request session being driven by
 
-    @Test(timeout = 50_000)
+    @Test
+    @Timeout(50_000)
     public void shouldRestartAfterResetAndSomeSessionsNotReconnected() throws InterruptedException
     {
         launch();
@@ -112,7 +115,7 @@ public class MissingHeaderFileIndexTest extends AbstractGatewayToGatewaySystemTe
     {
         final Reply<Session> reply =
             connectPersistentSessions(1, 1, false);
-        assertEquals("Reply failed: " + reply, Reply.State.COMPLETED, reply.state());
+        assertEquals(Reply.State.COMPLETED, reply.state(), "Reply failed: " + reply);
         initiatingSession = reply.resultIfPresent();
         assertConnected(initiatingSession);
     }

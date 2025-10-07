@@ -17,8 +17,10 @@ package uk.co.real_logic.artio.system_tests;
 
 import io.aeron.logbuffer.ControlledFragmentHandler.Action;
 import org.agrona.DirectBuffer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.TestFixtures;
 import uk.co.real_logic.artio.decoder.NewOrderSingleDecoder;
@@ -32,7 +34,7 @@ import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.ABORT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.Constants.EXECUTION_REPORT_MESSAGE_AS_STR;
 import static uk.co.real_logic.artio.Timing.assertEventuallyTrue;
 import static uk.co.real_logic.artio.engine.logger.Replayer.MOST_RECENT_MESSAGE;
@@ -83,7 +85,7 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
         };
     }
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         deleteLogs();
@@ -91,7 +93,8 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
         launch(AUTOMATIC_INITIAL_SEQUENCE_NUMBER);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldReplayMessageBeforeARestart()
     {
         final int resendSeqNum = exchangeMessages();
@@ -136,14 +139,16 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
             }, 5000);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotBeAbleToReplayMessagesFromBeforeReset1()
     {
         // reset when ReplayIndex instances exist
         shouldNotBeAbleToReplayMessagesFromBeforeReset0(() -> {});
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldNotBeAbleToReplayMessagesFromBeforeReset2()
     {
         // reset when ReplayIndex instances do not exist
@@ -220,7 +225,7 @@ public class PersistentSequenceNumberResendRequestSystemTest extends AbstractGat
     {
         final Reply<Session> reply = connectPersistentSessions(
             initiatorInitialSentSequenceNumber, initiatorInitialReceivedSequenceNumber, false);
-        assertEquals("Reply failed: " + reply, Reply.State.COMPLETED, reply.state());
+        assertEquals(Reply.State.COMPLETED, reply.state(), "Reply failed: " + reply);
         initiatingSession = reply.resultIfPresent();
         acquireAcceptingSession();
     }

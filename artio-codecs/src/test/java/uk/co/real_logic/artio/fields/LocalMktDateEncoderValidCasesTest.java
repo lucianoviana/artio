@@ -15,48 +15,49 @@
  */
 package uk.co.real_logic.artio.fields;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.fields.LocalMktDateDecoderValidCasesTest.toLocalDay;
 import static uk.co.real_logic.artio.util.CustomMatchers.sequenceEqualsAscii;
 
-@RunWith(Parameterized.class)
 public class LocalMktDateEncoderValidCasesTest
 {
     private final MutableAsciiBuffer timestampBytes = new MutableAsciiBuffer(new byte[LocalMktDateEncoder.LENGTH]);
 
-    private final String timestamp;
-    private final int localDays;
+    private int localDays;
 
-    @Parameters(name = "{0}")
-    public static Iterable<Object> data()
+    public static Stream<Arguments> data()
     {
         return LocalMktDateDecoderValidCasesTest.data();
     }
 
-    public LocalMktDateEncoderValidCasesTest(final String timestamp)
+    private void prepare(final String timestamp)
     {
-        this.timestamp = timestamp;
         localDays = toLocalDay(timestamp);
     }
 
-    @Test
-    public void canParseTimestamp()
+    @ParameterizedTest
+    @MethodSource(value = "data")
+    public void canParseTimestamp(final String timestamp)
     {
+        prepare(timestamp);
         LocalMktDateEncoder.encode(localDays, timestampBytes, 0);
 
         assertThat(timestampBytes, sequenceEqualsAscii(timestamp, 0, LocalMktDateEncoder.LENGTH));
     }
 
-    @Test
-    public void canParseTimestampFromByteArray()
+    @ParameterizedTest
+    @MethodSource(value = "data")
+    public void canParseTimestampFromByteArray(final String timestamp)
     {
+        prepare(timestamp);
         final LocalMktDateEncoder encoder = new LocalMktDateEncoder();
         final int length = encoder.encode(localDays, timestampBytes.byteArray());
         assertEquals(LocalMktDateEncoder.LENGTH, length);

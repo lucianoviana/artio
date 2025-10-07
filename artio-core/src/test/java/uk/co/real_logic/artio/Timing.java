@@ -23,7 +23,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import static org.agrona.SystemUtil.isDebuggerAttached;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public final class Timing
 {

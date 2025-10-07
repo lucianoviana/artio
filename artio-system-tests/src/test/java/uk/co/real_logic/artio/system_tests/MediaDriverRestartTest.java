@@ -17,8 +17,10 @@ package uk.co.real_logic.artio.system_tests;
 
 import io.aeron.archive.ArchivingMediaDriver;
 import io.aeron.driver.MediaDriver;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.CloseChecker;
 import uk.co.real_logic.artio.TestFixtures;
 import uk.co.real_logic.artio.engine.EngineConfiguration;
@@ -35,13 +37,14 @@ public class MediaDriverRestartTest extends AbstractGatewayToGatewaySystemTest
 {
     private static final int DRIVER_TIMEOUT_MS = IN_CI ? 10_000 : 1000;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         start(true);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldSurviveCompleteRestart() throws InterruptedException
     {
         acceptingLibrary.close();

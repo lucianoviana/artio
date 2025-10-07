@@ -16,8 +16,8 @@
 package uk.co.real_logic.artio.dictionary.generation;
 
 import org.agrona.generation.StringWriterOutputManager;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.builder.Printer;
 import uk.co.real_logic.artio.util.MutableAsciiBuffer;
 
@@ -54,7 +54,7 @@ public class PrinterGeneratorTest
 
     private final MutableAsciiBuffer buffer = new MutableAsciiBuffer(new byte[8 * 1024]);
 
-    @BeforeClass
+    @BeforeAll
     public static void generate() throws Exception
     {
         CONSTANT_GENERATOR.generate();

@@ -17,14 +17,16 @@ package uk.co.real_logic.artio.engine.framer;
 
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.OffsetEpochNanoClock;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.engine.MappedFile;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_FIXP_ID_FILE;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.DEFAULT_SESSION_ID_BUFFER_SIZE;
@@ -39,7 +41,7 @@ public class ILink3ContextsTest
     private File file;
     private FixPContexts contexts;
 
-    @Before
+    @BeforeEach
     public void setup()
     {
         file = new File(DEFAULT_FIXP_ID_FILE).getAbsoluteFile();
@@ -199,7 +201,7 @@ public class ILink3ContextsTest
         return (ILink3Context)contexts.calculateInitiatorContext(key, reestablishConnection);
     }
 
-    @After
+    @AfterEach
     public void close()
     {
         contexts.close();

@@ -33,7 +33,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static uk.co.real_logic.artio.engine.FixEngine.ENGINE_LIBRARY_ID;
 import static uk.co.real_logic.artio.library.FixLibrary.NO_MESSAGE_REPLAY;
 

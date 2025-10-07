@@ -20,8 +20,8 @@ import org.agrona.DirectBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.generation.StringWriterOutputManager;
 import org.hamcrest.Matcher;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.EncodingException;
 import uk.co.real_logic.artio.builder.Encoder;
 import uk.co.real_logic.artio.builder.FieldBagEncoder;
@@ -39,7 +39,7 @@ import static java.lang.reflect.Modifier.isPublic;
 import static org.agrona.generation.CompilerUtil.compileInMemory;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static uk.co.real_logic.artio.dictionary.ExampleDictionary.*;
 import static uk.co.real_logic.artio.dictionary.generation.AbstractDecoderGeneratorTest.assertAppendToMatches;
 import static uk.co.real_logic.artio.dictionary.generation.CodecConfiguration.DEFAULT_PARENT_PACKAGE;
@@ -56,7 +56,7 @@ public class EncoderGeneratorTest
 
     private final MutableAsciiBuffer buffer = new MutableAsciiBuffer(new byte[8 * 1024]);
 
-    @BeforeClass
+    @BeforeAll
     public static void generate() throws Exception
     {
         sources = generateSources(true);
@@ -99,13 +99,13 @@ public class EncoderGeneratorTest
     @Test
     public void generatesEncoderClass()
     {
-        assertNotNull("Not generated anything", heartbeat);
+        assertNotNull(heartbeat, "Not generated anything");
         assertNotNull(heartbeat);
         assertTrue(Encoder.class.isAssignableFrom(heartbeat));
 
         final int modifiers = heartbeat.getModifiers();
-        assertFalse("Not instantiable", isAbstract(modifiers));
-        assertTrue("Not public", isPublic(modifiers));
+        assertFalse(isAbstract(modifiers), "Not instantiable");
+        assertTrue(isPublic(modifiers), "Not public");
     }
 
     @Test
@@ -370,7 +370,7 @@ public class EncoderGeneratorTest
     public void flagsForOptionalFieldsInitiallyUnset() throws Exception
     {
         final Object encoder = heartbeat.getConstructor().newInstance();
-        assertFalse("hasTestReqId initially true", hasTestReqId(encoder));
+        assertFalse(hasTestReqId(encoder), "hasTestReqId initially true");
     }
 
     @Test
@@ -380,7 +380,7 @@ public class EncoderGeneratorTest
 
         setTestReqId(encoder);
 
-        assertTrue("hasTestReqId not updated", hasTestReqId(encoder));
+        assertTrue(hasTestReqId(encoder), "hasTestReqId not updated");
     }
 
     @Test
@@ -566,20 +566,23 @@ public class EncoderGeneratorTest
         assertEncodesTo(encoder, NO_OPTIONAL_MESSAGE);
     }
 
-    @Test(expected = EncodingException.class)
+    @Test
     public void shouldResetFlagForMissingRequiredIntFields() throws Exception
     {
-        final Encoder encoder = newHeartbeat();
+        assertThrows(EncodingException.class, () ->
+        {
+            final Encoder encoder = newHeartbeat();
 
-        setRequiredFields(encoder);
+            setRequiredFields(encoder);
 
-        encoder.reset();
+            encoder.reset();
 
-        setOnBehalfOfCompID(encoder);
-        setFloatField(encoder);
-        setSomeTimeField(encoder, 1);
+            setOnBehalfOfCompID(encoder);
+            setFloatField(encoder);
+            setSomeTimeField(encoder, 1);
 
-        encoder.encode(buffer, 1);
+            encoder.encode(buffer, 1);
+        });
     }
 
     @Test
@@ -715,103 +718,125 @@ public class EncoderGeneratorTest
         assertEncodesTo(encoder, SINGLE_REPEATING_GROUP_MESSAGE);
     }
 
-    @Test(expected = EncodingException.class)
+    @Test
     public void shouldValidateMissingRequiredStringFields() throws Exception
     {
-        final Encoder encoder = newHeartbeat();
+        assertThrows(EncodingException.class, () ->
+        {
 
-        setFloatField(encoder);
-        setSomeTimeField(encoder, 0);
+            final Encoder encoder = newHeartbeat();
 
-        encoder.encode(buffer, 1);
+            setFloatField(encoder);
+            setSomeTimeField(encoder, 0);
+
+            encoder.encode(buffer, 1);
+        });
     }
 
-    @Test(expected = EncodingException.class)
+    @Test
     public void shouldValidateMissingRequiredFloatFields() throws Exception
     {
-        final Encoder encoder = newHeartbeat();
+        assertThrows(EncodingException.class, () ->
+        {
+            final Encoder encoder = newHeartbeat();
 
-        setOnBehalfOfCompID(encoder);
-        setSomeTimeField(encoder, 0);
+            setOnBehalfOfCompID(encoder);
+            setSomeTimeField(encoder, 0);
 
-        encoder.encode(buffer, 1);
+            encoder.encode(buffer, 1);
+        });
     }
 
-    @Test(expected = EncodingException.class)
+    @Test
     public void shouldValidateMissingRequiredIntFields() throws Exception
     {
-        final Encoder encoder = newHeartbeat();
+        assertThrows(EncodingException.class, () ->
+        {
+            final Encoder encoder = newHeartbeat();
 
-        setOnBehalfOfCompID(encoder);
-        setFloatField(encoder);
-        setSomeTimeField(encoder, 1);
+            setOnBehalfOfCompID(encoder);
+            setFloatField(encoder);
+            setSomeTimeField(encoder, 1);
 
-        encoder.encode(buffer, 1);
+            encoder.encode(buffer, 1);
+        });
     }
 
-    @Test(expected = EncodingException.class)
+    @Test
     public void shouldValidateMissingRequiredTemporalFields() throws Exception
     {
-        final Encoder encoder = newHeartbeat();
+        assertThrows(EncodingException.class, () ->
+        {
+            final Encoder encoder = newHeartbeat();
 
-        setOnBehalfOfCompID(encoder);
-        setFloatField(encoder);
+            setOnBehalfOfCompID(encoder);
+            setFloatField(encoder);
 
-        encoder.encode(buffer, 1);
+            encoder.encode(buffer, 1);
+        });
     }
 
-    @Test(expected = EncodingException.class)
+    @Test
     public void shouldValidateMissingRequiredCharEnumFields() throws Exception
     {
-        final Encoder encoder = newEnumTestMessage();
+        assertThrows(EncodingException.class, () ->
+        {
+            final Encoder encoder = newEnumTestMessage();
 
-        setEnum(
-            encoder,
-            INT_ENUM_REQ,
-            DEFAULT_PARENT_PACKAGE + ".IntEnumReq",
-            "THIRTY");
-        setEnum(
-            encoder,
-            STRING_ENUM_REQ,
-            DEFAULT_PARENT_PACKAGE + ".StringEnumReq",
-            "GAMMA");
-        encoder.encode(buffer, 1);
+            setEnum(
+                encoder,
+                INT_ENUM_REQ,
+                DEFAULT_PARENT_PACKAGE + ".IntEnumReq",
+                "THIRTY");
+            setEnum(
+                encoder,
+                STRING_ENUM_REQ,
+                DEFAULT_PARENT_PACKAGE + ".StringEnumReq",
+                "GAMMA");
+            encoder.encode(buffer, 1);
+        });
     }
 
-    @Test(expected = EncodingException.class)
+    @Test
     public void shouldValidateMissingRequiredIntEnumFields() throws Exception
     {
-        final Encoder encoder = newEnumTestMessage();
+        assertThrows(EncodingException.class, () ->
+        {
+            final Encoder encoder = newEnumTestMessage();
 
-        setEnum(
-            encoder,
-            CHAR_ENUM_REQ,
-            DEFAULT_PARENT_PACKAGE + ".CharEnumReq",
-            "C");
-        setEnum(
-            encoder,
-            STRING_ENUM_REQ,
-            DEFAULT_PARENT_PACKAGE + ".StringEnumReq",
-            "GAMMA");
-        encoder.encode(buffer, 1);
+            setEnum(
+                encoder,
+                CHAR_ENUM_REQ,
+                DEFAULT_PARENT_PACKAGE + ".CharEnumReq",
+                "C");
+            setEnum(
+                encoder,
+                STRING_ENUM_REQ,
+                DEFAULT_PARENT_PACKAGE + ".StringEnumReq",
+                "GAMMA");
+            encoder.encode(buffer, 1);
+        });
     }
 
-    @Test(expected = EncodingException.class)
+    @Test
     public void shouldValidateMissingRequiredStringEnumFields() throws Exception
     {
-        final Encoder encoder = newEnumTestMessage();
+        assertThrows(EncodingException.class, () ->
+        {
+            final Encoder encoder = newEnumTestMessage();
 
-        setEnum(
-            encoder,
-            CHAR_ENUM_REQ,
-            DEFAULT_PARENT_PACKAGE + ".CharEnumReq",
-            "C");
-        setEnum(
-            encoder,
-            INT_ENUM_REQ,
-            DEFAULT_PARENT_PACKAGE + ".IntEnumReq",
-            "THIRTY");
-        encoder.encode(buffer, 1);
+            setEnum(
+                encoder,
+                CHAR_ENUM_REQ,
+                DEFAULT_PARENT_PACKAGE + ".CharEnumReq",
+                "C");
+            setEnum(
+                encoder,
+                INT_ENUM_REQ,
+                DEFAULT_PARENT_PACKAGE + ".IntEnumReq",
+                "THIRTY");
+            encoder.encode(buffer, 1);
+        });
     }
 
     @Test

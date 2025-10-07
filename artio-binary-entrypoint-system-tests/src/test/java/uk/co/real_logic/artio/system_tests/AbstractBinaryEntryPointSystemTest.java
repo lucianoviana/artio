@@ -21,7 +21,9 @@ import org.agrona.CloseHelper;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.OffsetEpochNanoClock;
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
+
+
 import org.mockito.Mockito;
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.MonitoringAgentFactory;
@@ -43,8 +45,8 @@ import java.io.IOException;
 
 import static io.aeron.CommonContext.IPC_CHANNEL;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.co.real_logic.artio.TestFixtures.*;
@@ -203,7 +205,7 @@ public class AbstractBinaryEntryPointSystemTest
         return testSystem.connect(libraryConfig);
     }
 
-    @After
+    @AfterEach
     public void close()
     {
         closeArtio();
@@ -309,8 +311,8 @@ public class AbstractBinaryEntryPointSystemTest
             assertEquals(client.sessionId(), connectionExistsHandler.lastSurrogateSessionId());
             final BinaryEntryPointContext id =
                 (BinaryEntryPointContext)connectionExistsHandler.lastIdentification();
-            assertEquals("wrong sessionId", client.sessionId(), id.sessionID());
-            assertEquals("wrong sessionVerID", client.sessionVerID(), id.sessionVerID());
+            assertEquals(client.sessionId(), id.sessionID(), "wrong sessionId");
+            assertEquals(client.sessionVerID(), id.sessionVerID(), "wrong sessionVerID");
             final Reply<SessionReplyStatus> reply = connectionExistsHandler.lastReply();
 
             testSystem.awaitCompletedReply(reply);
@@ -324,9 +326,9 @@ public class AbstractBinaryEntryPointSystemTest
     {
         final BinaryEntryPointContext context = (BinaryEntryPointContext)fixPAuthenticationStrategy.lastSessionId();
         assertNotNull(context);
-        assertEquals("wrong sessionId", client.sessionId(), context.sessionID());
-        assertEquals("wrong sessionVerID", client.sessionVerID(), context.sessionVerID());
-        assertEquals("wrong sessionId", BinaryEntryPointClient.CREDENTIALS, context.credentials());
+        assertEquals(client.sessionId(), context.sessionID(), "wrong sessionId");
+        assertEquals(client.sessionVerID(), context.sessionVerID(), "wrong sessionVerID");
+        assertEquals(BinaryEntryPointClient.CREDENTIALS, context.credentials(), "wrong sessionId");
         if (context.fromNegotiate())
         {
             assertEquals(BinaryEntryPointClient.CLIENT_IP, context.clientIP());
@@ -412,7 +414,7 @@ public class AbstractBinaryEntryPointSystemTest
 
     void assertNextSequenceNumbers(final int nextRecvSeqNo, final int nextSentSeqNo)
     {
-        assertEquals("wrong nextSentSeqNo", nextSentSeqNo, connection.nextSentSeqNo());
-        assertEquals("wrong nextRecvSeqNo", nextRecvSeqNo, connection.nextRecvSeqNo());
+        assertEquals(nextSentSeqNo, connection.nextSentSeqNo(), "wrong nextSentSeqNo");
+        assertEquals(nextRecvSeqNo, connection.nextRecvSeqNo(), "wrong nextRecvSeqNo");
     }
 }

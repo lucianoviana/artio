@@ -28,9 +28,11 @@ import org.agrona.collections.IntHashSet;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
@@ -62,7 +64,7 @@ import static io.aeron.logbuffer.ControlledFragmentHandler.Action.*;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_NAME_PREFIX;
 import static uk.co.real_logic.artio.decoder.ExampleMessageDecoder.MESSAGE_TYPE;
@@ -103,7 +105,7 @@ public class ReplayerTest extends AbstractLogTest
     private Replayer replayer;
     private boolean sendsStartReplay = true;
 
-    @Before
+    @BeforeEach
     public void setUp()
     {
         when(fragmentHeader.flags()).thenReturn((byte)DataHeaderFlyweight.BEGIN_AND_END_FLAGS);
@@ -611,7 +613,7 @@ public class ReplayerTest extends AbstractLogTest
         replayer.doWork();
     }
 
-    @After
+    @AfterEach
     public void shouldHaveNoMoreErrors()
     {
         verifyNoMoreInteractions(errorHandler);
@@ -732,7 +734,7 @@ public class ReplayerTest extends AbstractLogTest
     {
         final String message = resultAsciiBuffer.getAscii(afterOffset, resultAsciiBuffer.capacity() - afterOffset);
         final Matcher matcher = Pattern.compile("10=\\d+\001").matcher(message);
-        assertTrue(message, matcher.find());
+        assertTrue(matcher.find(), message);
     }
 
     private void hasNotOverwrittenSeperatorChar()
@@ -760,10 +762,10 @@ public class ReplayerTest extends AbstractLogTest
                 RejectReason.decode(sequenceReset.rejectReason()));
         }
 
-        assertTrue(message, sequenceReset.gapFillFlag());
-        assertEquals(message, msgSeqNum, header.msgSeqNum());
+        assertTrue(sequenceReset.gapFillFlag(), message);
+        assertEquals(msgSeqNum, header.msgSeqNum(), message);
         assertEquals(newSeqNo, sequenceReset.newSeqNo());
-        assertTrue(message, header.possDupFlag());
+        assertTrue(header.possDupFlag(), message);
     }
 
     private void setupMessage(final int length)

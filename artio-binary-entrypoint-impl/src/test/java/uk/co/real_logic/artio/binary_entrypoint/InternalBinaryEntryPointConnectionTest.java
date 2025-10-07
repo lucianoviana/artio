@@ -18,7 +18,8 @@ package uk.co.real_logic.artio.binary_entrypoint;
 import b3.entrypoint.fixp.sbe.CancelOnDisconnectType;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.OffsetEpochNanoClock;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import uk.co.real_logic.artio.CommonConfiguration;
 import uk.co.real_logic.artio.fixp.FixPConnectionHandler;
 import uk.co.real_logic.artio.fixp.FixPMessageDissector;

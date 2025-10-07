@@ -16,9 +16,9 @@
 package uk.co.real_logic.artio.engine.framer;
 
 import io.aeron.Image;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.co.real_logic.artio.engine.framer.FinalImagePositions.UNKNOWN_POSITION;

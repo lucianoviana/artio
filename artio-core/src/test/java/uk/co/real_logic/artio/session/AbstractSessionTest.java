@@ -19,7 +19,7 @@ import io.aeron.logbuffer.ControlledFragmentHandler.Action;
 import org.agrona.DirectBuffer;
 import org.agrona.concurrent.EpochNanoClock;
 import org.agrona.concurrent.status.AtomicCounter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.verification.VerificationMode;
@@ -45,7 +45,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.CommonConfiguration.DEFAULT_REASONABLE_TRANSMISSION_TIME_IN_S;
 import static uk.co.real_logic.artio.CommonConfiguration.NO_FORCED_HEARTBEAT_INTERVAL;
@@ -1467,17 +1467,17 @@ public abstract class AbstractSessionTest
 
     private void assertAwaitingResend()
     {
-        assertTrue("Session is not awaiting resend", session().awaitingResend());
+        assertTrue(session().awaitingResend(), "Session is not awaiting resend");
     }
 
     private void assertAwaitingHeartbeat()
     {
-        assertTrue("Session is not awaiting heartbeat", session().awaitingHeartbeat());
+        assertTrue(session().awaitingHeartbeat(), "Session is not awaiting heartbeat");
     }
 
     private void assertNotAwaitingResend()
     {
-        assertFalse("Session is awaiting resend", session().awaitingResend());
+        assertFalse(session().awaitingResend(), "Session is awaiting resend");
     }
 
     private void onGapFill(final int msgSeqNo, final int newSeqNo)

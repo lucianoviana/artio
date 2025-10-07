@@ -15,12 +15,12 @@
  */
 package uk.co.real_logic.artio.engine.framer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static io.aeron.Publication.BACK_PRESSURED;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.ABORT;
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UnitOfWorkTest
 {

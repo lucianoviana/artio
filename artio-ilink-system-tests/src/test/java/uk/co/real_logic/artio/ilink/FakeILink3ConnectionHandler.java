@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static io.aeron.logbuffer.ControlledFragmentHandler.Action.CONTINUE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.ilink.ILink3TestServer.NO_AFFECTED_ORDERS_COUNT;
 
 public class FakeILink3ConnectionHandler implements ILink3ConnectionHandler

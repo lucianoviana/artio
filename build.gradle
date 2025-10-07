@@ -154,7 +154,6 @@ subprojects {
         testImplementation libs.mockito
         testImplementation platform(libs.junit.bom)
         testImplementation "org.junit.jupiter:junit-jupiter"
-        testImplementation libs.junit4
         testRuntimeOnly "org.junit.platform:junit-platform-launcher"
         testRuntimeOnly "org.junit.vintage:junit-vintage-engine"
     }

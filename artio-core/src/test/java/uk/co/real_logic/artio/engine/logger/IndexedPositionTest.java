@@ -18,11 +18,13 @@ package uk.co.real_logic.artio.engine.logger;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.AtomicBuffer;
 import org.agrona.concurrent.UnsafeBuffer;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.FileSystemCorruptionException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,7 +47,7 @@ public class IndexedPositionTest
     private final IndexedPositionWriter writer = newWriter();
     private final IndexedPositionReader reader = new IndexedPositionReader(buffer);
 
-    @After
+    @AfterEach
     public void noErrors()
     {
         verifyNoMoreInteractions(errorHandler);

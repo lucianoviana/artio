@@ -24,7 +24,8 @@ import org.agrona.concurrent.SystemEpochNanoClock;
 import org.agrona.concurrent.UnsafeBuffer;
 import org.agrona.sbe.MessageDecoderFlyweight;
 import org.agrona.sbe.MessageEncoderFlyweight;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+
 import uk.co.real_logic.artio.DebugLogger;
 import uk.co.real_logic.artio.binary_entrypoint.BinaryEntryPointProtocol;
 import uk.co.real_logic.sbe.json.JsonPrinter;
@@ -38,7 +39,7 @@ import java.nio.channels.SocketChannel;
 import static b3.entrypoint.fixp.sbe.CancelOnDisconnectType.DO_NOT_CANCEL_ON_DISCONNECT_OR_TERMINATE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.co.real_logic.artio.LogTag.FIX_TEST;
 import static uk.co.real_logic.artio.binary_entrypoint.BinaryEntryPointProxy.BINARY_ENTRYPOINT_HEADER_LENGTH;
 import static uk.co.real_logic.artio.fixp.SimpleOpenFramingHeader.*;
@@ -242,7 +243,7 @@ public final class BinaryEntryPointClient implements AutoCloseable
             {
                 final StringBuilder sb = new StringBuilder("invalid template id: ");
                 jsonPrinter.print(sb, unsafeReadBuffer, SOFH_LENGTH);
-                assertEquals(sb.toString(), expectedDecodeTemplateId, templateId);
+                assertEquals(expectedDecodeTemplateId, templateId, sb.toString());
             }
 
             if (totalLength != read)
@@ -436,10 +437,10 @@ public final class BinaryEntryPointClient implements AutoCloseable
     public EstablishAckDecoder readEstablishAck(final int nextSeqNo, final int lastIncomingSeqNo)
     {
         final EstablishAckDecoder establishAck = read(new EstablishAckDecoder(), 0);
-        assertEquals("sessionID", sessionId, establishAck.sessionID());
-        assertEquals("sessionVerID", sessionVerID, establishAck.sessionVerID());
-        assertEquals("nextSeqNo", nextSeqNo, establishAck.nextSeqNo());
-        assertEquals("lastIncomingSeqNo", lastIncomingSeqNo, establishAck.lastIncomingSeqNo());
+        assertEquals(sessionId, establishAck.sessionID(), "sessionID");
+        assertEquals(sessionVerID, establishAck.sessionVerID(), "sessionVerID");
+        assertEquals(nextSeqNo, establishAck.nextSeqNo(), "nextSeqNo");
+        assertEquals(lastIncomingSeqNo, establishAck.lastIncomingSeqNo(), "lastIncomingSeqNo");
         assertEquals(serverAliveIntervalInMs, establishAck.keepAliveInterval().time());
         return establishAck;
     }
@@ -544,8 +545,8 @@ public final class BinaryEntryPointClient implements AutoCloseable
                     final int blockLength = headerDecoder.blockLength();
                     final int version = headerDecoder.version();
 
-                    Assert.fail("read = " + read + ", totalLength = " + totalLength + ", templateId = " + templateId +
-                        ", blockLength = " + blockLength + ", version = " + version);
+                    Assertions.fail("read = " + read + ", totalLength = " + totalLength + ", templateId = " +
+                        templateId + ", blockLength = " + blockLength + ", version = " + version);
                 }
                 catch (final IOException e)
                 {

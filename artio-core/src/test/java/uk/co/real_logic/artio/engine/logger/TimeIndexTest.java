@@ -18,16 +18,18 @@ package uk.co.real_logic.artio.engine.logger;
 import org.agrona.ErrorHandler;
 import org.agrona.IoUtil;
 import org.agrona.collections.Long2ObjectHashMap;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.real_logic.artio.dictionary.generation.Exceptions;
 
 import java.io.File;
 import java.util.stream.LongStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.co.real_logic.artio.engine.EngineConfiguration.*;
@@ -56,14 +58,14 @@ public class TimeIndexTest
 
     private TimeIndexWriter writer;
 
-    @After
+    @AfterEach
     public void teardown()
     {
         verifyNoInteractions(errorHandler);
         Exceptions.closeAll(writer);
     }
 
-    @Before
+    @BeforeEach
     public void setup()
     {
         final File logFileDir = new File(DEFAULT_LOG_FILE_DIR);
@@ -137,7 +139,7 @@ public class TimeIndexTest
         final Long2ObjectHashMap<PositionRange> recordingIdToPositionRange = new Long2ObjectHashMap<>();
         reader.findPositionRange(query, recordingIdToPositionRange);
 
-        assertEquals(recordingIdToPositionRange.toString(), 2, recordingIdToPositionRange.size());
+        assertEquals(2, recordingIdToPositionRange.size(), recordingIdToPositionRange.toString());
 
         assertPositions(startPosition, endPosition, recordingIdToPositionRange, REC_ID);
         assertPositions(startPosition, endPosition, recordingIdToPositionRange, REC_ID_2);
@@ -148,7 +150,7 @@ public class TimeIndexTest
         final Long2ObjectHashMap<PositionRange> recordingIdToPositionRange, final int recId)
     {
         final PositionRange positionRange = recordingIdToPositionRange.get(recId);
-        assertEquals(positionRange.toString(), startPosition, positionRange.startPosition());
-        assertEquals(positionRange.toString(), endPosition, positionRange.endPosition());
+        assertEquals(startPosition, positionRange.startPosition(), positionRange.toString());
+        assertEquals(endPosition, positionRange.endPosition(), positionRange.toString());
     }
 }

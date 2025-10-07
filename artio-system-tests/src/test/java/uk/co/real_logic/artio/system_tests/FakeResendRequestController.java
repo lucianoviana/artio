@@ -23,7 +23,7 @@ import uk.co.real_logic.artio.session.ResendRequestController;
 import uk.co.real_logic.artio.session.ResendRequestResponse;
 import uk.co.real_logic.artio.session.Session;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.co.real_logic.artio.dictionary.SessionConstants.RESEND_REQUEST_MESSAGE_TYPE_CHARS;
 import static uk.co.real_logic.artio.fields.RejectReason.OTHER;
 

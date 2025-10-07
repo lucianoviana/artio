@@ -44,8 +44,8 @@ import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static uk.co.real_logic.artio.Reply.State.COMPLETED;
 import static uk.co.real_logic.artio.Timing.DEFAULT_TIMEOUT_IN_MS;
 import static uk.co.real_logic.artio.Timing.assertEventuallyTrue;
@@ -162,7 +162,7 @@ public class TestSystem
         {
             assertNotNull(reply);
             awaitReply(reply);
-            assertEquals(reply.toString(), COMPLETED, reply.state());
+            assertEquals(COMPLETED, reply.state(), reply.toString());
         }
     }
 
@@ -204,7 +204,7 @@ public class TestSystem
             Exceptions.printStackTracesForAllThreads();
         }
 
-        assertEquals(reply.toString(), COMPLETED, reply.state());
+        assertEquals(COMPLETED, reply.state(), reply.toString());
         return reply;
     }
 

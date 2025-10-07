@@ -16,8 +16,10 @@
 package uk.co.real_logic.artio.system_tests;
 
 import org.agrona.ErrorHandler;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
 import uk.co.real_logic.artio.Reply;
 import uk.co.real_logic.artio.builder.AbstractLogonEncoder;
 import uk.co.real_logic.artio.builder.AbstractLogoutEncoder;
@@ -39,7 +41,7 @@ import uk.co.real_logic.artio.session.SessionCustomisationStrategy;
 
 import static io.aeron.CommonContext.IPC_CHANNEL;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.artio.MonitoringAgentFactory.none;
@@ -66,7 +68,7 @@ public class MultipleFixVersionSystemTest extends AbstractGatewayToGatewaySystem
     private Session fixtInitiatingSession;
     private Session fixtAcceptingSession;
 
-    @Before
+    @BeforeEach
     public void launch()
     {
         deleteLogs();
@@ -141,7 +143,8 @@ public class MultipleFixVersionSystemTest extends AbstractGatewayToGatewaySystem
         acceptingEngine = FixEngine.launch(acceptingConfiguration);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToSendMessagesFromInitiatorToBothAcceptors()
     {
         launchArtio();
@@ -152,7 +155,8 @@ public class MultipleFixVersionSystemTest extends AbstractGatewayToGatewaySystem
         bothSessionsCanExchangeMessages();
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToAquireSessions()
     {
         launchArtio();
@@ -175,7 +179,8 @@ public class MultipleFixVersionSystemTest extends AbstractGatewayToGatewaySystem
         assertHeaderHasApplVerId(acceptingOtfAcceptor);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldBeAbleToAcceptAFixVersionBasedUponLogonMessage()
     {
         launchArtio();
@@ -194,7 +199,8 @@ public class MultipleFixVersionSystemTest extends AbstractGatewayToGatewaySystem
         initiatingOtfAcceptor.messages().forEach(this::assertHasTestField);
     }
 
-    @Test(timeout = TEST_TIMEOUT_IN_MS)
+    @Test
+    @Timeout(TEST_TIMEOUT_IN_MS)
     public void shouldHandleIncorrectFixVersionsGracefully()
     {
         // Test that if a session connects with a different FIX version than expected that no random exceptions
@@ -222,13 +228,13 @@ public class MultipleFixVersionSystemTest extends AbstractGatewayToGatewaySystem
         sendTestRequest(testSystem, fixtInitiatingSession, testReqID, fixtDictionary);
         final FixMessage reject = testSystem.awaitMessageOf(initiatingOtfAcceptor, Constants.REJECT_MESSAGE_AS_STR);
         final String rejectStr = reject.toString();
-        assertTrue(rejectStr, reject.isValid());
-        assertEquals(rejectStr, MessageStatus.OK, reject.status());
+        assertTrue(reject.isValid(), rejectStr);
+        assertEquals(MessageStatus.OK, reject.status(), rejectStr);
     }
 
     private void assertHasTestField(final FixMessage msg)
     {
-        assertEquals(msg.toString(), TEST_VALUE, msg.get(Constants.TEST_FIELD));
+        assertEquals(TEST_VALUE, msg.get(Constants.TEST_FIELD), msg.toString());
     }
 
     private void acquireOtherAcceptingSession()
@@ -286,7 +292,7 @@ public class MultipleFixVersionSystemTest extends AbstractGatewayToGatewaySystem
             acceptingHandler, acceptingLibrary, sessionId, testSystem);
         assertEquals(INITIATOR_ID, acceptingHandler.lastInitiatorCompId());
         assertEquals(FIXT_ACCEPTOR_ID, acceptingHandler.lastAcceptorCompId());
-        assertNotNull("unable to acquire accepting session", fixtAcceptingSession);
+        assertNotNull(fixtAcceptingSession, "unable to acquire accepting session");
     }
 
     private void connectFixTSessions()
